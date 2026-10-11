@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lớp 10A12 - K58 | Cổng Học Sinh</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="../assets/app_icon_10a12.png">
+  <link rel="apple-touch-icon" href="../assets/app_icon_10a12.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- HEADER HỌC SINH -->
+  <header class="bg-brand-navy text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img src="../assets/app_icon_10a12.png" alt="Logo Lớp 10A12" class="w-11 h-11 rounded-xl shadow border border-white/20 object-contain">
+        <div>
+          <div class="font-bold text-base flex items-center gap-1.5">
+            LỚP 10A12 <span class="text-[10px] bg-sky-600 text-sky-100 px-1.5 py-0.2 rounded font-normal">K58</span>
+          </div>
+          <div class="text-xs text-slate-300">THPT Số 1 Quang Trung</div>
+        </div>
+      </div>
+      <button onclick="fetchLatestData()" class="p-2 text-slate-300 hover:text-white" title="Làm mới dữ liệu">
+        <i data-lucide="refresh-cw" class="w-5 h-5" id="hs-sync-icon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- NỘI DUNG MOBILE-FIRST -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 space-y-4">
+    
+    <!-- Banner Mini -->
+    <div class="bg-gradient-to-r from-sky-800 to-brand-navy rounded-2xl p-4 text-white shadow-sm flex items-center justify-between">
+      <div>
+        <div class="text-xs text-sky-200">Năm học 2026 - 2027</div>
+        <div class="text-lg font-bold">Cổng Thông Tin Học Sinh</div>
+        <div class="text-xs text-slate-300 mt-0.5">GVCN: Thầy Trần Dương Quốc Mẫn</div>
+      </div>
+      <img src="../assets/banner_10a12.png" alt="Banner" class="h-8 object-contain bg-white/90 px-2 py-1 rounded-lg">
+    </div>
+
+    <!-- Điểm thi đua 4 Tổ theo tuần -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Xếp hạng thi đua 4 Tổ (Tuần này)</h3>
+        <span class="text-[10px] bg-sky-50 text-sky-700 font-semibold px-2 py-0.5 rounded">Quy chế 01</span>
+      </div>
+      <div class="grid grid-cols-4 gap-2 text-center text-xs pt-1" id="team-scores-bar"></div>
+    </div>
+
+    <!-- Tra cứu cá nhân -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+      <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Tra cứu thông tin học sinh</h3>
+      <input type="text" id="hs-search-input" oninput="renderHsStudentList()" placeholder="Nhập tên học sinh để tra cứu..." class="w-full p-2.5 text-xs border rounded-lg focus:ring-2 focus:ring-sky-500">
+      <div id="hs-student-results" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
+    </div>
+
+    <!-- Nhật ký thi đua gần đây -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+      <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Ghi nhận nề nếp mới nhất</h3>
+      <div id="hs-incidents-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
+    </div>
+
+  </main>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycb.../exec"; // Dán URL của bạn tại đây
+
+    let hsData = {
+      students: [],
+      incidents: [],
+      payments: {}
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const cached = localStorage.getItem('HS_CACHE');
+      if (cached) {
+        try { hsData = JSON.parse(cached); } catch(e){}
+        renderHsAll();
+      }
+      lucide.createIcons();
+      await fetchLatestData();
+    });
+
+    async function fetchLatestData() {
+      const icon = document.getElementById('hs-sync-icon');
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const res = await fetch(`${GAS_URL}?action=GET_ALL`);
+        const json = await res.json();
+        if (json.status === "success") {
+          hsData.students = json.data.students || [];
+          hsData.incidents = json.data.incidents || [];
+          hsData.payments = json.data.fund?.payments || {};
+          localStorage.setItem('HS_CACHE', JSON.stringify(hsData));
+          renderHsAll();
+        }
+      } catch (e) {
+        console.warn("Lỗi tải đám mây:", e);
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function renderHsAll() {
+      renderTeamScores();
+      renderHsStudentList();
+      renderHsIncidents();
+    }
+
+    function renderTeamScores() {
+      const bar = document.getElementById('team-scores-bar');
+      if (!bar) return;
+      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
+      hsData.incidents.forEach(i => {
+        if (scores[i.team] !== undefined) scores[i.team] += Number(i.points);
+      });
+
+      bar.innerHTML = [1, 2, 3, 4].map(t => `
+        <div class="p-2 bg-slate-50 rounded-lg border">
+          <div class="font-bold text-sky-800">Tổ ${t}</div>
+          <div class="text-sm font-extrabold text-slate-800 mt-0.5">${scores[t]} đ</div>
+        </div>
+      `).join('');
+    }
+
+    function renderHsStudentList() {
+      const container = document.getElementById('hs-student-results');
+      if (!container) return;
+      const q = (document.getElementById('hs-search-input')?.value || '').toLowerCase().trim();
+      container.innerHTML = '';
+
+      if (!q) {
+        container.innerHTML = '<div class="text-slate-400 text-center py-2">Gõ tên để xem trạng thái đóng quỹ và điểm.</div>';
+        return;
+      }
+
+      const filtered = hsData.students.filter(s => s.name.toLowerCase().includes(q));
+      filtered.forEach(s => {
+        const isPaid = Boolean(hsData.payments[s.id]?.paid);
+        const card = document.createElement('div');
+        card.className = "p-2.5 rounded-lg border bg-slate-50 space-y-1";
+        card.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-slate-800 text-sm">${s.name}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-bold ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+              ${isPaid ? 'ĐÃ NỘP QUỸ HK1' : 'CHƯA NỘP QUỸ'}
+            </span>
+          </div>
+          <div class="text-[11px] text-slate-500">Tổ ${s.team} • Chức vụ: ${s.role}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderHsIncidents() {
+      const container = document.getElementById('hs-incidents-list');
+      if (!container) return;
+      container.innerHTML = '';
+      hsData.incidents.slice().reverse().slice(0, 10).forEach(inc => {
+        const isV = Number(inc.points) < 0;
+        const d = document.createElement('div');
+        d.className = `p-2 rounded border flex justify-between items-center ${isV ? 'bg-rose-50/60 text-rose-900 border-rose-100' : 'bg-emerald-50/60 text-emerald-900 border-emerald-100'}`;
+        d.innerHTML = `
+          <div>
+            <div class="font-bold">${inc.studentName} (Tổ ${inc.team})</div>
+            <div class="text-[10px] text-slate-500">${inc.desc}</div>
+          </div>
+          <span class="font-bold ${isV ? 'text-rose-600' : 'text-emerald-600'}">${inc.points > 0 ? '+' + inc.points : inc.points}đ</span>
+        `;
+        container.appendChild(d);
+      });
+    }
+  </script>
+</body>
+</html>
