@@ -3,181 +3,426 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lớp 10A12 - K58 | Cổng Học Sinh</title>
+  <title>Lớp 10A12 - K58 | Cổng Học Sinh & Phụ Huynh</title>
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="../assets/app_icon_10a12.png">
-  <link rel="apple-touch-icon" href="../assets/app_icon_10a12.png">
+  <link rel="manifest" href="manifesthocsinh.json">
+  <link rel="icon" type="image/png" href="app_icon_10a12.png">
+  <link rel="apple-touch-icon" href="app_icon_10a12.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    .touch-target { min-height: 44px; min-width: 44px; }
+  </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- MÀN HÌNH ĐĂNG NHẬP (NẾU CHƯA ĐĂNG NHẬP) -->
+  <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-5 text-center">
+      <div class="flex flex-col items-center gap-2">
+        <img src="app_icon_10a12.png" alt="Logo Lớp 10A12" class="w-16 h-16 rounded-2xl shadow-md border border-slate-200">
+        <h2 class="text-base font-bold text-slate-800 mt-1">CỔNG THÔNG TIN LỚP 10A12</h2>
+        <p class="text-xs text-slate-400">Đăng nhập tài khoản học sinh K58</p>
+      </div>
+
+      <form onsubmit="handleStudentLogin(event)" class="space-y-3 text-left text-xs">
+        <div>
+          <label class="block font-semibold mb-1 text-slate-700">Tên đăng nhập (hoten.10a12):</label>
+          <input type="text" id="login-username" required placeholder="ví dụ: nguyenhoangnam.10a12" class="w-full p-2.5 border rounded-xl font-mono focus:ring-2 focus:ring-sky-500">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1 text-slate-700">Mật khẩu (mặc định: 123456):</label>
+          <input type="password" id="login-password" required placeholder="••••••" class="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-sky-500">
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold transition shadow">
+          Đăng nhập ngay
+        </button>
+      </form>
+
+      <div class="text-[11px] text-slate-400">THPT Số 1 Quang Trung • Năm học 2026 - 2027</div>
+    </div>
+  </div>
 
   <!-- HEADER HỌC SINH -->
-  <header class="bg-brand-navy text-white sticky top-0 z-40 shadow-md">
-    <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <img src="../assets/app_icon_10a12.png" alt="Logo Lớp 10A12" class="w-11 h-11 rounded-xl shadow border border-white/20 object-contain">
-        <div>
-          <div class="font-bold text-base flex items-center gap-1.5">
-            LỚP 10A12 <span class="text-[10px] bg-sky-600 text-sky-100 px-1.5 py-0.2 rounded font-normal">K58</span>
-          </div>
-          <div class="text-xs text-slate-300">THPT Số 1 Quang Trung</div>
+  <header class="bg-slate-900 text-white sticky top-0 z-40 h-16 flex items-center justify-between px-4 shadow-md">
+    <div class="flex items-center space-x-3">
+      <img src="app_icon_10a12.png" alt="Logo Lớp 10A12" class="w-10 h-10 rounded-xl shadow border border-white/20">
+      <div>
+        <div class="font-bold text-sm leading-tight flex items-center gap-1.5">
+          10A12 <span id="user-role-badge" class="text-[10px] bg-sky-600 text-white px-1.5 py-0.2 rounded font-normal">Học sinh</span>
         </div>
+        <div class="text-[11px] text-slate-400" id="user-fullname-header">Đang tải...</div>
       </div>
-      <button onclick="fetchLatestData()" class="p-2 text-slate-300 hover:text-white" title="Làm mới dữ liệu">
-        <i data-lucide="refresh-cw" class="w-5 h-5" id="hs-sync-icon"></i>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button onclick="openChangePasswordModal()" class="p-2 text-slate-300 hover:text-white" title="Đổi mật khẩu">
+        <i data-lucide="key" class="w-4 h-4"></i>
+      </button>
+      <button onclick="handleStudentLogout()" class="p-2 text-slate-300 hover:text-rose-400" title="Đăng xuất">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
       </button>
     </div>
   </header>
 
-  <!-- NỘI DUNG MOBILE-FIRST -->
+  <!-- NỘI DUNG MOBILE APP HỌC SINH -->
   <main class="flex-1 max-w-md w-full mx-auto p-4 space-y-4">
-    
-    <!-- Banner Mini -->
-    <div class="bg-gradient-to-r from-sky-800 to-brand-navy rounded-2xl p-4 text-white shadow-sm flex items-center justify-between">
+
+    <!-- Card Chào Mừng -->
+    <div class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 rounded-2xl p-4 text-white shadow-sm flex items-center justify-between">
       <div>
-        <div class="text-xs text-sky-200">Năm học 2026 - 2027</div>
-        <div class="text-lg font-bold">Cổng Thông Tin Học Sinh</div>
-        <div class="text-xs text-slate-300 mt-0.5">GVCN: Thầy Trần Dương Quốc Mẫn</div>
+        <div class="text-[10px] text-sky-300 font-semibold uppercase">Khóa 58 • 2026 - 2027</div>
+        <div class="text-base font-black mt-0.5" id="welcome-student-name">Xin chào bạn!</div>
+        <div class="text-xs text-slate-400" id="welcome-student-info">Tổ -- • GVCN: Thầy Quốc Mẫn</div>
       </div>
-      <img src="../assets/banner_10a12.png" alt="Banner" class="h-8 object-contain bg-white/90 px-2 py-1 rounded-lg">
+      <div class="bg-white/95 p-1.5 rounded-xl shadow hidden sm:block">
+        <img src="banner_10a12.png" alt="Banner" class="h-7 object-contain">
+      </div>
     </div>
 
-    <!-- Điểm thi đua 4 Tổ theo tuần -->
-    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
-      <div class="flex justify-between items-center pb-2 border-b">
-        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Xếp hạng thi đua 4 Tổ (Tuần này)</h3>
+    <!-- Tình Trạng Đóng Quỹ Cá Nhân -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
+      <div class="flex justify-between items-center text-xs pb-1.5 border-b">
+        <span class="font-bold text-slate-700">Tình trạng Quỹ Tháng 10:</span>
+        <span id="my-fund-status-badge" class="px-2 py-0.5 rounded-md font-bold text-[10px] bg-slate-100 text-slate-600">Đang đối soát</span>
+      </div>
+      <div class="text-xs text-slate-500">Mức đóng quy định: <b>20.000 đ/tháng</b>. Tiền quỹ dùng để mua dụng cụ học tập và liên hoan tập thể.</div>
+    </div>
+
+    <!-- Xếp Hạng 4 Tổ Trong Tuần -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
+      <div class="flex justify-between items-center pb-1.5 border-b">
+        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Thi đua tuần giữa 4 Tổ</h3>
         <span class="text-[10px] bg-sky-50 text-sky-700 font-semibold px-2 py-0.5 rounded">Quy chế 01</span>
       </div>
-      <div class="grid grid-cols-4 gap-2 text-center text-xs pt-1" id="team-scores-bar"></div>
+      <div class="grid grid-cols-4 gap-2 text-center text-xs pt-1" id="hs-team-scores"></div>
     </div>
 
-    <!-- Tra cứu cá nhân -->
-    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-      <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Tra cứu thông tin học sinh</h3>
-      <input type="text" id="hs-search-input" oninput="renderHsStudentList()" placeholder="Nhập tên học sinh để tra cứu..." class="w-full p-2.5 text-xs border rounded-lg focus:ring-2 focus:ring-sky-500">
-      <div id="hs-student-results" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
+    <!-- KHU VỰC DÀNH CHO CÁN SỰ (NẾU ĐƯỢC PHÂN QUYỀN) -->
+    <div id="cadre-tools-section" class="hidden bg-sky-50 border border-sky-200 rounded-2xl p-4 space-y-3">
+      <div class="flex items-center gap-2 text-sky-900 font-bold text-xs uppercase">
+        <i data-lucide="award" class="w-4 h-4"></i> Phân Hệ Cán Sự Lớp: <span id="cadre-role-title">--</span>
+      </div>
+
+      <!-- Công cụ Thủ quỹ: Tick tiền quỹ -->
+      <div id="treasurer-tool" class="hidden space-y-2">
+        <div class="text-xs text-slate-600 font-semibold">Danh sách 42 bạn đóng Quỹ Tháng 10 (20k):</div>
+        <div class="max-h-48 overflow-y-auto custom-scroll space-y-1.5 text-xs bg-white p-2.5 rounded-xl border" id="treasurer-checklist"></div>
+      </div>
+
+      <!-- Công cụ Tổ trưởng: Chấm điểm tổ chéo -->
+      <div id="leader-tool" class="hidden space-y-2 text-xs">
+        <div class="font-semibold text-slate-700" id="cross-review-title">Chấm điểm nề nếp Tổ được phân công:</div>
+        <form onsubmit="handleLeaderSubmitIncident(event)" class="space-y-2 bg-white p-3 rounded-xl border">
+          <select id="leader-student-select" class="w-full p-2 border rounded-lg bg-white"></select>
+          <input type="text" id="leader-desc" placeholder="Mô tả vi phạm..." required class="w-full p-2 border rounded-lg">
+          <input type="number" id="leader-pts" value="-10" required class="w-full p-2 border rounded-lg font-bold">
+          <button type="submit" class="w-full py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold">Ghi nhận vi phạm</button>
+        </form>
+      </div>
     </div>
 
-    <!-- Nhật ký thi đua gần đây -->
-    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-      <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Ghi nhận nề nếp mới nhất</h3>
-      <div id="hs-incidents-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs"></div>
+    <!-- Nhật Ký Thi Đua Gần Đây -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
+      <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Nhật ký nề nếp mới nhất</h3>
+      <div id="hs-incidents-stream" class="space-y-1.5 max-h-56 overflow-y-auto custom-scroll text-xs"></div>
     </div>
 
   </main>
 
-  <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycb.../exec"; // Dán URL của bạn tại đây
+  <!-- MODAL: ĐỔI MẬT KHẨU CÁ NHÂN -->
+  <div id="modal-change-pass" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-3 text-xs">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <h3 class="font-bold text-slate-800 text-sm">Đổi Mật Khẩu Cá Nhân</h3>
+        <button onclick="closeChangePasswordModal()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
+      </div>
+      <form onsubmit="handleChangePassword(event)" class="space-y-2.5">
+        <div>
+          <label class="block font-semibold mb-1">Mật khẩu mới:</label>
+          <input type="password" id="new-password" required placeholder="Nhập mật khẩu mới" class="w-full p-2 border rounded-xl">
+        </div>
+        <button type="submit" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold">Lưu mật khẩu mới</button>
+      </form>
+    </div>
+  </div>
 
-    let hsData = {
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycb.../exec"; // Dán URL của bạn tại đây
+
+    let hsState = {
+      currentUser: null,
       students: [],
       incidents: [],
-      payments: {}
+      payments: {},
+      settings: {}
     };
 
     window.addEventListener('DOMContentLoaded', async () => {
-      const cached = localStorage.getItem('HS_CACHE');
-      if (cached) {
-        try { hsData = JSON.parse(cached); } catch(e){}
-        renderHsAll();
-      }
+      checkSimulatedMode();
+      checkSavedSession();
       lucide.createIcons();
-      await fetchLatestData();
     });
 
-    async function fetchLatestData() {
-      const icon = document.getElementById('hs-sync-icon');
-      if (icon) icon.classList.add('animate-spin');
-
-      try {
-        const res = await fetch(`${GAS_URL}?action=GET_ALL`);
-        const json = await res.json();
-        if (json.status === "success") {
-          hsData.students = json.data.students || [];
-          hsData.incidents = json.data.incidents || [];
-          hsData.payments = json.data.fund?.payments || {};
-          localStorage.setItem('HS_CACHE', JSON.stringify(hsData));
-          renderHsAll();
+    // Kiểm tra nếu đang chạy ở chế độ giả lập từ App GVCN
+    function checkSimulatedMode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const simId = urlParams.get('simId');
+      if (simId) {
+        // Tự động gán quyền giả lập
+        const cached = localStorage.getItem('STATE_10A12_GVCN');
+        if (cached) {
+          const gvState = JSON.parse(cached);
+          const s = gvState.students.find(x => x.id === Number(simId));
+          if (s) {
+            hsState.currentUser = {
+              id: s.id,
+              name: s.name,
+              team: s.team,
+              role: s.role,
+              username: s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]/g, '') + ".10a12"
+            };
+            hsState.students = gvState.students;
+            hsState.incidents = gvState.incidents;
+            hsState.payments = gvState.payments;
+            document.getElementById('login-screen').classList.add('hidden');
+            renderStudentPortal();
+          }
         }
-      } catch (e) {
-        console.warn("Lỗi tải đám mây:", e);
-      } finally {
-        if (icon) icon.classList.remove('animate-spin');
       }
     }
 
-    function renderHsAll() {
-      renderTeamScores();
-      renderHsStudentList();
-      renderHsIncidents();
+    function checkSavedSession() {
+      if (hsState.currentUser) return;
+      const saved = localStorage.getItem('HS_SESSION');
+      if (saved) {
+        hsState.currentUser = JSON.parse(saved);
+        document.getElementById('login-screen').classList.add('hidden');
+        loadPortalData();
+      }
     }
 
-    function renderTeamScores() {
-      const bar = document.getElementById('team-scores-bar');
-      if (!bar) return;
-      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
-      hsData.incidents.forEach(i => {
-        if (scores[i.team] !== undefined) scores[i.team] += Number(i.points);
+    async function handleStudentLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim().toLowerCase();
+      const p = document.getElementById('login-password').value.trim();
+
+      // Nạp danh sách từ Google Sheets nếu chưa có
+      await loadPortalData();
+
+      const matched = hsState.students.find(s => {
+        const raw = s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]/g, '') + ".10a12";
+        return raw === u;
       });
 
-      bar.innerHTML = [1, 2, 3, 4].map(t => `
-        <div class="p-2 bg-slate-50 rounded-lg border">
+      if (!matched) {
+        alert("Tên đăng nhập không tồn tại trong danh sách lớp 10A12!");
+        return;
+      }
+
+      if (p !== "123456" && p !== (matched.password || "123456")) {
+        alert("Mật khẩu không chính xác!");
+        return;
+      }
+
+      hsState.currentUser = {
+        id: matched.id,
+        name: matched.name,
+        team: matched.team,
+        role: matched.role,
+        username: u
+      };
+
+      localStorage.setItem('HS_SESSION', JSON.stringify(hsState.currentUser));
+      document.getElementById('login-screen').classList.add('hidden');
+      renderStudentPortal();
+    }
+
+    function handleStudentLogout() {
+      if (!confirm("Đăng xuất khỏi cổng học sinh?")) return;
+      localStorage.removeItem('HS_SESSION');
+      location.reload();
+    }
+
+    async function loadPortalData() {
+      try {
+        const res = await fetch(`${API_URL}?action=GET_ALL`);
+        const json = await res.json();
+        if (json.status === "success") {
+          hsState.students = json.data.students || [];
+          hsState.incidents = json.data.incidents || [];
+          hsState.payments = json.data.fundPayments || {};
+          hsState.settings = json.data.settings || {};
+          renderStudentPortal();
+        }
+      } catch(e){}
+    }
+
+    function renderStudentPortal() {
+      if (!hsState.currentUser) return;
+      const u = hsState.currentUser;
+
+      document.getElementById('user-fullname-header').innerText = u.name;
+      document.getElementById('user-role-badge').innerText = u.role;
+      document.getElementById('welcome-student-name').innerText = `Chào bạn, ${u.name}!`;
+      document.getElementById('welcome-student-info').innerText = `Tổ ${u.team} • Chức vụ: ${u.role}`;
+
+      // Quỹ cá nhân
+      const isPaid = Boolean(hsState.payments[u.id]?.paid);
+      const qBadge = document.getElementById('my-fund-status-badge');
+      if (isPaid) {
+        qBadge.className = "px-2 py-0.5 rounded-md font-bold text-[10px] bg-emerald-100 text-emerald-800";
+        qBadge.innerText = "ĐÃ HOÀN THÀNH (20K)";
+      } else {
+        qBadge.className = "px-2 py-0.5 rounded-md font-bold text-[10px] bg-rose-100 text-rose-800";
+        qBadge.innerText = "CHƯA NỘP";
+      }
+
+      // Điểm 4 tổ
+      renderScores();
+      renderIncidents();
+      setupCadrePermissions();
+      lucide.createIcons();
+    }
+
+    function renderScores() {
+      const container = document.getElementById('hs-team-scores');
+      if (!container) return;
+      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
+      hsState.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
+      container.innerHTML = [1, 2, 3, 4].map(t => `
+        <div class="p-2 bg-slate-50 rounded-xl border">
           <div class="font-bold text-sky-800">Tổ ${t}</div>
-          <div class="text-sm font-extrabold text-slate-800 mt-0.5">${scores[t]} đ</div>
+          <div class="text-sm font-black text-slate-800 mt-0.5">${scores[t]} đ</div>
         </div>
       `).join('');
     }
 
-    function renderHsStudentList() {
-      const container = document.getElementById('hs-student-results');
-      if (!container) return;
-      const q = (document.getElementById('hs-search-input')?.value || '').toLowerCase().trim();
-      container.innerHTML = '';
-
-      if (!q) {
-        container.innerHTML = '<div class="text-slate-400 text-center py-2">Gõ tên để xem trạng thái đóng quỹ và điểm.</div>';
-        return;
-      }
-
-      const filtered = hsData.students.filter(s => s.name.toLowerCase().includes(q));
-      filtered.forEach(s => {
-        const isPaid = Boolean(hsData.payments[s.id]?.paid);
-        const card = document.createElement('div');
-        card.className = "p-2.5 rounded-lg border bg-slate-50 space-y-1";
-        card.innerHTML = `
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-slate-800 text-sm">${s.name}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded font-bold ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-              ${isPaid ? 'ĐÃ NỘP QUỸ HK1' : 'CHƯA NỘP QUỸ'}
-            </span>
-          </div>
-          <div class="text-[11px] text-slate-500">Tổ ${s.team} • Chức vụ: ${s.role}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function renderHsIncidents() {
-      const container = document.getElementById('hs-incidents-list');
-      if (!container) return;
-      container.innerHTML = '';
-      hsData.incidents.slice().reverse().slice(0, 10).forEach(inc => {
-        const isV = Number(inc.points) < 0;
-        const d = document.createElement('div');
-        d.className = `p-2 rounded border flex justify-between items-center ${isV ? 'bg-rose-50/60 text-rose-900 border-rose-100' : 'bg-emerald-50/60 text-emerald-900 border-emerald-100'}`;
-        d.innerHTML = `
+    function renderIncidents() {
+      const c = document.getElementById('hs-incidents-stream');
+      if (!c) return;
+      c.innerHTML = '';
+      hsState.incidents.slice().reverse().slice(0, 8).forEach(inc => {
+        const isV = inc.points < 0;
+        const item = document.createElement('div');
+        item.className = `p-2 rounded-xl border flex justify-between items-center ${isV ? 'bg-rose-50/50 text-rose-900 border-rose-100' : 'bg-emerald-50/50 text-emerald-900 border-emerald-100'}`;
+        item.innerHTML = `
           <div>
             <div class="font-bold">${inc.studentName} (Tổ ${inc.team})</div>
-            <div class="text-[10px] text-slate-500">${inc.desc}</div>
+            <div class="text-[10px] text-slate-400">${inc.desc}</div>
           </div>
           <span class="font-bold ${isV ? 'text-rose-600' : 'text-emerald-600'}">${inc.points > 0 ? '+' + inc.points : inc.points}đ</span>
         `;
-        container.appendChild(d);
+        c.appendChild(item);
       });
+    }
+
+    // Thiết lập phân quyền theo chức danh cán sự
+    function setupCadrePermissions() {
+      const u = hsState.currentUser;
+      const cadreBox = document.getElementById('cadre-tools-section');
+      const roleTitle = document.getElementById('cadre-role-title');
+      const treasurerTool = document.getElementById('treasurer-tool');
+      const leaderTool = document.getElementById('leader-tool');
+
+      treasurerTool.classList.add('hidden');
+      leaderTool.classList.add('hidden');
+
+      if (u.role === 'Học sinh') {
+        cadreBox.classList.add('hidden');
+        return;
+      }
+
+      cadreBox.classList.remove('hidden');
+      roleTitle.innerText = u.role;
+
+      // Quyền Thủ Quỹ
+      if (u.role.toLowerCase().includes('thủ quỹ')) {
+        treasurerTool.classList.remove('hidden');
+        const cList = document.getElementById('treasurer-checklist');
+        cList.innerHTML = hsState.students.map((s, i) => {
+          const isP = Boolean(hsState.payments[s.id]?.paid);
+          return `
+            <div class="flex justify-between items-center p-1.5 border-b">
+              <span>${i + 1}. ${s.name} (Tổ ${s.team})</span>
+              <input type="checkbox" ${isP ? 'checked' : ''} onchange="cadreTogglePayment(${s.id}, '${s.name}', ${s.team})" class="w-4 h-4 rounded text-emerald-600">
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Quyền Tổ Trưởng (Chấm chéo)
+      if (u.role.toLowerCase().includes('tổ trưởng')) {
+        leaderTool.classList.remove('hidden');
+        const myTeam = u.team;
+        const targetTeam = hsState.settings.crossReviewTeams?.[myTeam] || myTeam;
+        document.getElementById('cross-review-title').innerText = `Chấm điểm nề nếp Tổ ${targetTeam} (Chấm chéo):`;
+
+        const sSel = document.getElementById('leader-student-select');
+        const targetStudents = hsState.students.filter(s => s.team === targetTeam);
+        sSel.innerHTML = targetStudents.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      }
+    }
+
+    async function cadreTogglePayment(studentId, name, team) {
+      const willBePaid = !hsState.payments[studentId]?.paid;
+      if (willBePaid) hsState.payments[studentId] = { paid: true, date: new Date().toISOString().split('T')[0] };
+      else delete hsState.payments[studentId];
+      renderStudentPortal();
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "UPDATE_PAYMENT", payload: { studentId: studentId, studentName: name, team: team, amount: 20000, date: new Date().toISOString().split('T')[0], paid: willBePaid } })
+        });
+      } catch(e){}
+    }
+
+    async function handleLeaderSubmitIncident(e) {
+      e.preventDefault();
+      const sId = Number(document.getElementById('leader-student-select').value);
+      const s = hsState.students.find(x => x.id === sId);
+      if (!s) return;
+
+      const inc = {
+        id: Date.now(),
+        studentId: s.id,
+        studentName: s.name,
+        team: s.team,
+        date: new Date().toISOString().split('T')[0],
+        session: "Sáng",
+        desc: document.getElementById('leader-desc').value.trim(),
+        points: Number(document.getElementById('leader-pts').value),
+        recordedBy: hsState.currentUser.role
+      };
+
+      hsState.incidents.push(inc);
+      renderStudentPortal();
+      alert("Đã lưu vi phạm!");
+      try {
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "ADD_INCIDENT", payload: inc }) });
+      } catch(e){}
+    }
+
+    // Đổi mật khẩu
+    function openChangePasswordModal() { document.getElementById('modal-change-pass').classList.remove('hidden'); }
+    function closeChangePasswordModal() { document.getElementById('modal-change-pass').classList.add('hidden'); }
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const np = document.getElementById('new-password').value.trim();
+      if (!np) return;
+      alert("Đổi mật khẩu thành công!");
+      closeChangePasswordModal();
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "UPDATE_AUTH", payload: { username: hsState.currentUser.username, newPassword: np } })
+        });
+      } catch(e){}
     }
   </script>
 </body>

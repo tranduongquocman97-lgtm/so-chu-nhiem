@@ -1,15 +1,18 @@
 {
-  "name": "Lớp 10A12 - K58 THPT Quang Trung",
+  "name": "Lớp 10A12 - K58 THPT Số 1 Quang Trung",
   "short_name": "10A12 Quang Trung",
-  "start_url": "./index.html",
+  "description": "Cổng thông tin, tra cứu nề nếp và hoạt động học sinh Lớp 10A12 K58",
+  "start_url": "./hocsinh.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0284c7",
   "icons": [
     {
-      "src": "../assets/app_icon_10a12.png",
+      "src": "./app_icon_10a12.png",
       "sizes": "192x192 512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
