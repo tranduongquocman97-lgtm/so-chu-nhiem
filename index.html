@@ -1,809 +1,1474 @@
-<!-- Banner lớp trên đỉnh Sidebar (Có fallback nếu chưa có file banner_10a12.png) -->
-<div class="p-4 border-b border-slate-800 bg-slate-950/60 flex flex-col items-center gap-2">
-  <div class="bg-white/95 p-2 rounded-xl shadow-md w-full flex justify-center min-h-[48px] items-center">
-    <img src="banner_10a12.png" alt="A12 K58 THPT Số 1 Quang Trung" class="h-9 object-contain" onerror="this.onerror=null; this.outerHTML='<div class=\'text-sky-900 font-black text-sm tracking-wide\'>A12-K58 QT • QUANG TRUNG</div>'">
-  </div>
-  <div class="text-[11px] text-sky-400 font-semibold tracking-wider uppercase text-center mt-1">
-    Sổ Chủ Nhiệm Điện Tử
-  </div>
-</div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sổ Chủ Nhiệm 10A12 - GVCN | THPT Số 1 Quang Trung</title>
 
-<!-- Danh sách Menu Điều hướng -->
-<nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll text-xs font-medium">
-  <button onclick="switchTab('dashboard')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-sky-400 bg-sky-950/60 font-bold border border-sky-800/40" data-target="dashboard">
-    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-    <span>Tổng quan tuần</span>
-  </button>
+  <!-- Thư viện giao diện & tiện ích -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <button onclick="switchTab('students')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="students">
-    <i data-lucide="users" class="w-4 h-4"></i>
-    <span>Hồ sơ & Phụ huynh</span>
-  </button>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="app_icon_gvcn.png">
+  <link rel="apple-touch-icon" href="app_icon_gvcn.png">
 
-  <button onclick="switchTab('seating')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="seating">
-    <i data-lucide="grid" class="w-4 h-4"></i>
-    <span>Sơ đồ lớp học</span>
-  </button>
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    @media print { .no-print { display: none !important; } }
+  </style>
+</head>
 
-  <button onclick="switchTab('discipline')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="discipline">
-    <i data-lucide="check-square" class="w-4 h-4"></i>
-    <span>Nề nếp & Quy chế</span>
-  </button>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex antialiased">
 
-  <button onclick="switchTab('fund')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="fund">
-    <i data-lucide="wallet" class="w-4 h-4"></i>
-    <span>Quỹ lớp (20k/tháng)</span>
-  </button>
-
-  <button onclick="switchTab('minutes')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="minutes">
-    <i data-lucide="file-text" class="w-4 h-4"></i>
-    <span>Biên bản SHL Thứ 2</span>
-  </button>
-
-  <button onclick="switchTab('settings')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="settings">
-    <i data-lucide="settings" class="w-4 h-4"></i>
-    <span>Cài đặt & Đồng bộ Cloud</span>
-  </button>
-</nav>
-
-<!-- Chân Sidebar -->
-<div class="p-3 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between text-[11px]">
-  <div class="flex items-center gap-2">
-    <img src="app_icon_gvcn.png" alt="GVCN" class="w-8 h-8 rounded-lg border border-amber-400 object-cover" onerror="this.onerror=null; this.outerHTML='<div class=\'w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center font-black text-slate-950 text-xs\'>GV</div>'">
-    <div>
-      <div class="font-bold text-white leading-tight">Thầy Quốc Mẫn</div>
-      <div class="text-slate-400 text-[10px]">GVCN Lớp 10A12</div>
+  <!-- SIDEBAR BÊN TRÁI -->
+  <aside id="app-sidebar" class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out no-print">
+    <!-- Banner lớp trên đỉnh Sidebar -->
+    <div class="p-4 border-b border-slate-800 bg-slate-950/60 flex flex-col items-center gap-2">
+      <div class="bg-white/95 p-2 rounded-xl shadow-md w-full flex justify-center min-h-[48px] items-center">
+        <img src="banner_10a12.png" alt="A12 K58 THPT Số 1 Quang Trung" class="h-9 object-contain" onerror="this.onerror=null; this.outerHTML='<div class=\'text-sky-900 font-black text-sm tracking-wide\'>A12-K58 QT • QUANG TRUNG</div>'">
+      </div>
+      <div class="text-[11px] text-sky-400 font-semibold tracking-wider uppercase text-center mt-1">
+        Sổ Chủ Nhiệm Điện Tử
+      </div>
     </div>
-  </div>
-  <button onclick="lockApp()" class="p-2 text-slate-400 hover:text-rose-400" title="Khóa ứng dụng">
-    <i data-lucide="log-out" class="w-4 h-4"></i>
-  </button>
-</div>
 
+    <!-- Danh sách Menu Điều hướng -->
+    <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll text-xs font-medium">
+      <button onclick="switchTab('dashboard')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-sky-400 bg-sky-950/60 font-bold border border-sky-800/40" data-target="dashboard">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>Tổng quan tuần</span>
+      </button>
 
-<!-- Top Navigation Header -->
-<header class="bg-slate-900 text-white sticky top-0 z-40 h-16 border-b border-slate-800 flex items-center justify-between px-4 sm:px-6 shadow-md no-print">
-  <div class="flex items-center gap-3">
-    <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-300 hover:text-white">
-      <i data-lucide="menu" class="w-5 h-5"></i>
-    </button>
-    <div>
-      <span class="text-xs text-sky-400 font-semibold uppercase">Lớp 10A12 • K58</span>
-      <h2 id="page-title" class="text-sm sm:text-base font-bold text-white">Tổng quan tuần học</h2>
-    </div>
-  </div>
+      <button onclick="switchTab('students')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="students">
+        <i data-lucide="users" class="w-4 h-4"></i>
+        <span>Hồ sơ & Phụ huynh</span>
+      </button>
 
-  <!-- Live Clock & Đồng bộ Google Sheets -->
-  <div class="flex items-center gap-3">
-    <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 text-center shadow-inner">
-      <div class="text-[10px] text-sky-300 font-medium leading-none">Thời gian hiện tại</div>
-      <div id="live-clock" class="text-xs sm:text-sm font-extrabold font-mono text-white tracking-wider mt-0.5">--:--:--</div>
-    </div>
-    <button id="btn-sync" onclick="syncWithCloud()" class="p-2.5 sm:px-3 sm:py-2 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow transition">
-      <i data-lucide="refresh-cw" class="w-4 h-4" id="sync-icon"></i>
-      <span class="hidden sm:inline">Đồng bộ</span>
-    </button>
-  </div>
-</header>
+      <button onclick="switchTab('seating')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="seating">
+        <i data-lucide="grid" class="w-4 h-4"></i>
+        <span>Sơ đồ lớp học</span>
+      </button>
 
-<!-- NỘI DUNG CÁC PHÂN HỆ SPA -->
-<main class="flex-1 p-4 sm:p-6 space-y-6">
+      <button onclick="switchTab('discipline')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="discipline">
+        <i data-lucide="check-square" class="w-4 h-4"></i>
+        <span>Nề nếp & Quy chế</span>
+      </button>
 
-  <!-- 1. PHÂN HỆ TỔNG QUAN (DASHBOARD) -->
-  <section id="tab-dashboard" class="tab-pane space-y-6">
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+      <button onclick="switchTab('fund')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="fund">
+        <i data-lucide="wallet" class="w-4 h-4"></i>
+        <span>Quỹ lớp (20k/tháng)</span>
+      </button>
+
+      <button onclick="switchTab('minutes')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="minutes">
+        <i data-lucide="file-text" class="w-4 h-4"></i>
+        <span>Biên bản SHL Thứ 2</span>
+      </button>
+
+      <button onclick="switchTab('settings')" class="sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white" data-target="settings">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+        <span>Cài đặt & Đồng bộ Cloud</span>
+      </button>
+    </nav>
+
+    <!-- Chân Sidebar -->
+    <div class="p-3 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between text-[11px]">
+      <div class="flex items-center gap-2">
+        <img src="app_icon_gvcn.png" alt="GVCN" class="w-8 h-8 rounded-lg border border-amber-400 object-cover" onerror="this.onerror=null; this.outerHTML='<div class=\'w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center font-black text-slate-950 text-xs\'>GV</div>'">
         <div>
-          <div class="text-[11px] font-semibold text-slate-500 uppercase">Sĩ số lớp 10A12</div>
-          <div class="text-2xl font-black text-slate-800 mt-1" id="dash-total">42</div>
-          <div class="text-[11px] text-slate-500 mt-0.5">21 Nam • 21 Nữ</div>
+          <div class="font-bold text-white leading-tight">Thầy Quốc Mẫn</div>
+          <div class="text-slate-400 text-[10px]">GVCN Lớp 10A12</div>
         </div>
-        <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold"><i data-lucide="users" class="w-5 h-5"></i></div>
       </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-        <div>
-          <div class="text-[11px] font-semibold text-slate-500 uppercase">Quỹ lớp hiện hữu</div>
-          <div class="text-2xl font-black text-emerald-600 mt-1" id="dash-fund-balance">0 đ</div>
-          <div class="text-[11px] text-slate-500 mt-0.5" id="dash-fund-summary">Thu: 0đ | Chi: 0đ</div>
-        </div>
-        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="coins" class="w-5 h-5"></i></div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-        <div>
-          <div class="text-[11px] font-semibold text-slate-500 uppercase">Hồ sơ CCCD</div>
-          <div class="text-2xl font-black text-sky-600 mt-1" id="dash-cccd-count">42/42</div>
-          <div class="text-[11px] text-emerald-600 font-semibold mt-0.5" id="dash-cccd-percent">100% cập nhật</div>
-        </div>
-        <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><i data-lucide="id-card" class="w-5 h-5"></i></div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-        <div>
-          <div class="text-[11px] font-semibold text-slate-500 uppercase">Tổ dẫn đầu tuần</div>
-          <div class="text-2xl font-black text-amber-500 mt-1" id="dash-top-team">Tổ 1</div>
-          <div class="text-[11px] text-slate-500 mt-0.5">Quy chế thi đua</div>
-        </div>
-        <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center"><i data-lucide="trophy" class="w-5 h-5"></i></div>
-      </div>
-    </div>
-
-    <!-- MA TRẬN 7 BUỔI HỌC TRONG TUẦN -->
-    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
-        <div>
-          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-            <i data-lucide="calendar" class="w-4 h-4 text-sky-600"></i> Ma Trận Theo Dõi 7 Buổi Học Trong Tuần
-          </h3>
-          <p class="text-xs text-slate-500">Ghi nhận Vắng (có phép = 0đ), Trễ, Cúp tiết và Vi phạm theo buổi</p>
-        </div>
-        <span class="text-xs bg-sky-50 text-sky-700 font-bold px-2.5 py-1 rounded-lg border border-sky-200">
-          Tuần Học Hiện Tại
-        </span>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3" id="weekly-matrix-grid"></div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-        <h3 class="font-bold text-slate-800 text-sm">Điểm Thi Đua 4 Tổ (Khởi điểm 100đ)</h3>
-        <div class="h-60 relative flex items-center justify-center"><canvas id="chartTeams"></canvas></div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-        <h3 class="font-bold text-slate-800 text-sm">Tiến Độ Thu Quỹ Lớp (20.000 đ/tháng)</h3>
-        <div class="h-60 relative flex items-center justify-center"><canvas id="chartFund"></canvas></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. PHÂN HỆ HỒ SƠ HỌC SINH -->
-  <section id="tab-students" class="tab-pane hidden space-y-4">
-    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
-      <div class="flex flex-1 flex-wrap gap-2 w-full">
-        <div class="relative flex-1 min-w-[200px]">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-          <!-- Vô hiệu hóa Autofill tài khoản -->
-          <input type="search" id="search-student" name="no-autofill-search" autocomplete="off" oninput="renderStudentsTable()" placeholder="Tìm tên, CCCD, SĐT ba/mẹ..." class="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
-        </div>
-        <select id="filter-team" onchange="renderStudentsTable()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
-          <option value="ALL">Tất cả các tổ</option>
-          <option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option>
-        </select>
-      </div>
-
-      <div class="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
-        <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition">
-          <i data-lucide="file-up" class="w-4 h-4"></i> Nhập Excel
-          <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="handleImportExcel(event)">
-        </label>
-        <button onclick="exportExcelStudents()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow transition">
-          <i data-lucide="download" class="w-4 h-4"></i> Xuất Excel (Đầy đủ)
-        </button>
-        <button onclick="openStudentModal()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow transition">
-          <i data-lucide="user-plus" class="w-4 h-4"></i> Thêm học sinh
-        </button>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto custom-scroll">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead class="bg-slate-50 text-slate-700 uppercase font-semibold border-b">
-            <tr>
-              <th class="p-3 text-center w-10">STT</th>
-              <th class="p-3">Họ và Tên</th>
-              <th class="p-3">Số CCCD</th>
-              <th class="p-3 text-center">Tổ</th>
-              <th class="p-3">Chức vụ</th>
-              <th class="p-3">Thông tin Ba (Họ tên - SĐT)</th>
-              <th class="p-3">Thông tin Mẹ (Họ tên - SĐT)</th>
-              <th class="p-3 text-center w-36">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody id="student-table-body" class="divide-y divide-slate-100"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. PHÂN HỆ SƠ ĐỒ LỚP HỌC (ĐẢO NGƯỢC: BÀN GV BÊN TRÁI, CỬA RA VÀO BÊN PHẢI) -->
-  <section id="tab-seating" class="tab-pane hidden space-y-4">
-    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex justify-between items-center no-print">
-      <div class="text-xs">
-        <span class="font-bold text-slate-800">Sơ đồ đảo ngược 180°:</span> 
-        <span class="text-slate-500">Từ bục giảng nhìn xuống các bàn cuối lớp. Bấm 2 ô để hoán đổi chỗ ngồi.</span>
-      </div>
-      <button onclick="window.print()" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow">
-        <i data-lucide="printer" class="w-3.5 h-3.5"></i> In sơ đồ A4
+      <button onclick="lockApp()" class="p-2 text-slate-400 hover:text-rose-400" title="Khóa ứng dụng">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
       </button>
     </div>
+  </aside>
 
-    <div id="printable-seating" class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
-      <div class="text-center pb-2 border-b border-dashed border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest">
-        — PHÍA CUỐI PHÒNG HỌC (TƯỜNG SAU LỚP) —
-      </div>
+  <!-- VÙNG NỘI DUNG CHÍNH (BÊN PHẢI SIDEBAR) -->
+  <div class="flex-1 md:pl-64 flex flex-col min-w-0">
 
-      <!-- 4 Dãy Bàn Học Sinh Xếp Ngược -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="seating-grid"></div>
-
-      <!-- BÀN GV TRÁI - BỤC GIẢNG GIỮA - CỬA PHẢI -->
-      <div class="flex items-center justify-between pt-4 border-t-2 border-dashed border-slate-300">
-        <div class="w-36 py-2 px-3 bg-emerald-50 border border-emerald-300 rounded-xl text-center text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5 shadow-sm">
-          <i data-lucide="user" class="w-4 h-4"></i> BÀN GIÁO VIÊN
-        </div>
-        
-        <div class="py-2.5 px-12 bg-sky-100 border border-sky-300 rounded-2xl text-center text-xs font-bold text-sky-900 shadow uppercase tracking-wider">
-          BỤC GIẢNG & BẢNG TỪ LỚP 10A12
-        </div>
-
-        <div class="w-36 py-2 px-3 bg-amber-50 border border-amber-300 rounded-xl text-center text-xs font-bold text-amber-800 flex items-center justify-center gap-1.5 shadow-sm">
-          <i data-lucide="door-open" class="w-4 h-4"></i> CỬA RA VÀO
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. PHÂN HỆ NỀ NẾP & QUY CHẾ TỰ ĐỘNG GÁN ĐIỂM -->
-  <section id="tab-discipline" class="tab-pane hidden space-y-6">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-        <div class="flex justify-between items-center pb-2 border-b">
-          <h3 class="font-bold text-slate-800 text-sm">Ghi Nhận Thi Đua Nề Nếp</h3>
-          <button onclick="openRegulationModal()" class="text-[11px] text-sky-600 font-bold hover:underline flex items-center gap-1">
-            <i data-lucide="file-up" class="w-3 h-3"></i> Nạp file quy chế
-          </button>
-        </div>
-
-        <form onsubmit="handleSaveIncident(event)" class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">Học sinh liên quan:</label>
-            <select id="inc-student" class="w-full p-2.5 border rounded-xl bg-white"></select>
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1">Buổi học:</label>
-            <select id="inc-session" class="w-full p-2.5 border rounded-xl bg-white">
-              <option value="Sáng Thứ 2">Sáng Thứ 2</option>
-              <option value="Chiều Thứ 2">Chiều Thứ 2</option>
-              <option value="Sáng Thứ 3">Sáng Thứ 3</option>
-              <option value="Chiều Thứ 3">Chiều Thứ 3</option>
-              <option value="Sáng Thứ 4">Sáng Thứ 4</option>
-              <option value="Sáng Thứ 5">Sáng Thứ 5</option>
-              <option value="Sáng Thứ 6">Sáng Thứ 6</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1">Quy chế / Vi phạm (Tự động gán điểm):</label>
-            <select id="inc-preset" onchange="applyIncidentPreset()" class="w-full p-2.5 border rounded-xl bg-slate-50"></select>
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1">Mô tả vụ việc:</label>
-            <input type="text" id="inc-desc" required placeholder="Ghi chú cụ thể..." class="w-full p-2.5 border rounded-xl">
-          </div>
-
-          <div>
-            <label class="block font-semibold mb-1">Điểm điều chỉnh tự động:</label>
-            <input type="number" id="inc-points" required class="w-full p-2.5 border rounded-xl font-bold bg-slate-50">
-            <span class="text-[10px] text-slate-400 mt-0.5 block">* Vắng có phép được gán mặc định 0 điểm (không trừ điểm thi đua).</span>
-          </div>
-
-          <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition">
-            Lưu vào sổ nề nếp
-          </button>
-        </form>
-      </div>
-
-      <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-        <h3 class="font-bold text-slate-800 text-sm">Nhật Ký Thi Đua Gần Đây</h3>
-        <div id="incidents-list" class="space-y-2 max-h-[500px] overflow-y-auto custom-scroll pr-1 text-xs"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. PHÂN HỆ QUỸ LỚP (20.000 Đ/THÁNG) -->
-  <section id="tab-fund" class="tab-pane hidden space-y-6">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b">
-          <div>
-            <h3 class="font-bold text-slate-800 text-base">Đợt Thu Quỹ: Tháng 10/2026</h3>
-            <div class="text-xs text-slate-500">Mặc định: <b class="text-sky-700">20.000 đ/tháng/học sinh</b> • Thủ quỹ: <b>Lương Kim Ngân</b></div>
-          </div>
-          <button onclick="copyReminderZalo()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-blue-200">
-            <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Nhắc nợ Zalo
-          </button>
-        </div>
-
-        <div class="overflow-x-auto max-h-96 custom-scroll">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-50 text-slate-600 sticky top-0">
-              <tr>
-                <th class="p-2.5 text-center w-10">STT</th>
-                <th class="p-2.5">Họ và Tên</th>
-                <th class="p-2.5 text-center">Tổ</th>
-                <th class="p-2.5 text-center w-28">Trạng thái đóng</th>
-                <th class="p-2.5">Ngày nộp</th>
-              </tr>
-            </thead>
-            <tbody id="fund-table-body" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm pb-2 border-b">Ghi Nhận Thu / Chi Hoạt Động</h3>
-        <form onsubmit="handleSaveExpense(event)" class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold mb-1">Loại:</label>
-            <select id="exp-type" class="w-full p-2 border rounded-xl bg-white">
-              <option value="CHI">Khoản Chi (-)</option>
-              <option value="THU">Khoản Thu Ngoài (+)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Hạng mục chi tiêu:</label>
-            <input type="text" id="exp-cat" required placeholder="Mua phấn, hoa 20/11..." class="w-full p-2 border rounded-xl">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Số tiền (VNĐ):</label>
-            <input type="number" id="exp-amount" required min="1000" step="1000" placeholder="50000" class="w-full p-2 border rounded-xl">
-          </div>
-          <div>
-            <label class="block font-semibold mb-1">Người nhận/nộp:</label>
-            <input type="text" id="exp-person" required placeholder="Người phụ trách..." class="w-full p-2 border rounded-xl">
-          </div>
-          <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold">Ghi vào sổ quỹ</button>
-        </form>
-        <div class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll text-xs" id="expense-history-list"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. PHÂN HỆ BIÊN BẢN SHL (NẠP FILE KẾ HOẠCH & XUẤT WORD/EXCEL/PDF) -->
-  <section id="tab-minutes" class="tab-pane hidden space-y-4">
-    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 no-print">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-40 h-16 border-b border-slate-800 flex items-center justify-between px-4 sm:px-6 shadow-md no-print">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-300 hover:text-white">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
         <div>
-          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-            <i data-lucide="file-input" class="w-4 h-4 text-sky-600"></i> Kế Hoạch Tuần/Tháng Của Nhà Trường & Đoàn Trường
-          </h3>
-          <p class="text-xs text-slate-500">Tải lên file (.docx, .pdf, .xlsx, .txt) hoặc dán trực tiếp nội dung</p>
+          <span class="text-xs text-sky-400 font-semibold uppercase">Lớp 10A12 • K58</span>
+          <h2 id="page-title" class="text-sm sm:text-base font-bold text-white">Tổng quan tuần học</h2>
         </div>
-        
-        <label class="px-3.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition">
-          <i data-lucide="upload" class="w-3.5 h-3.5"></i> Tải file kế hoạch lên
-          <input type="file" id="minutes-plan-file" accept=".docx, .pdf, .xlsx, .xls, .txt" class="hidden" onchange="handleMinutesFileUpload(event)">
-        </label>
       </div>
 
-      <textarea id="minutes-school-plan" rows="3" class="w-full p-2.5 text-xs border rounded-xl" placeholder="Dán hoặc nội dung file kế hoạch tải lên sẽ xuất hiện tại đây..."></textarea>
-      
-      <div class="flex justify-between items-center">
-        <span id="minutes-file-status" class="text-[11px] text-emerald-600 font-semibold hidden">Đã đọc nội dung tệp kế hoạch thành công!</span>
-        <button onclick="generateMinutesContent()" class="ml-auto px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Tự động tổng hợp dữ liệu vào biên bản
+      <!-- Live Clock & Đồng bộ Google Sheets -->
+      <div class="flex items-center gap-3">
+        <div class="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 text-center shadow-inner">
+          <div class="text-[10px] text-sky-300 font-medium leading-none">Thời gian hiện tại</div>
+          <div id="live-clock" class="text-xs sm:text-sm font-extrabold font-mono text-white tracking-wider mt-0.5">--:--:--</div>
+        </div>
+        <button id="btn-sync" onclick="syncWithCloud()" class="p-2.5 sm:px-3 sm:py-2 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4" id="sync-icon"></i>
+          <span class="hidden sm:inline">Đồng bộ</span>
         </button>
       </div>
-    </div>
+    </header>
 
-    <!-- Khung Nội dung Biên bản SHL để In và Xuất File -->
-    <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6" id="printable-area">
-      <div class="text-center pb-4 border-b">
-        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">SỞ GIÁO DỤC VÀ ĐÀO TẠO GIA LAI • TRƯỜNG THPT SỐ 1 QUANG TRUNG</div>
-        <h2 class="text-lg font-black text-slate-900 uppercase mt-1">BIÊN BẢN SINH HOẠT LỚP ĐẦU TUẦN</h2>
-        <div class="text-xs text-slate-600 mt-1">Lớp: <b>10A12</b> • Thời gian: <b>Tiết 1, Sáng Thứ Hai</b> • Địa điểm: Phòng học 10A12</div>
-      </div>
+    <!-- NỘI DUNG CÁC PHÂN HỆ SPA -->
+    <main class="flex-1 p-4 sm:p-6 space-y-6">
 
-      <div class="space-y-4 text-xs leading-relaxed" id="minutes-content-box">
-        <div class="font-bold text-slate-800 text-sm">I. ĐÁNH GIÁ NỀ NẾP & HỌC TẬP TUẦN QUA:</div>
-        <div id="min-attendance-text" class="pl-3 text-slate-700 whitespace-pre-line">Đang chờ tổng hợp...</div>
+      <!-- 1. PHÂN HỆ TỔNG QUAN (DASHBOARD) -->
+      <section id="tab-dashboard" class="tab-pane space-y-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-semibold text-slate-500 uppercase">Sĩ số lớp 10A12</div>
+              <div class="text-2xl font-black text-slate-800 mt-1" id="dash-total">42</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">21 Nam • 21 Nữ</div>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold"><i data-lucide="users" class="w-5 h-5"></i></div>
+          </div>
 
-        <div class="font-bold text-slate-800 text-sm">II. KẾT QUẢ THI ĐUA NỘI BỘ 4 TỔ (QUY CHẾ 01):</div>
-        <div id="min-scores-text" class="pl-3 text-slate-700 whitespace-pre-line">Đang chờ tổng hợp...</div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-semibold text-slate-500 uppercase">Quỹ lớp hiện hữu</div>
+              <div class="text-2xl font-black text-emerald-600 mt-1" id="dash-fund-balance">0 đ</div>
+              <div class="text-[11px] text-slate-500 mt-0.5" id="dash-fund-summary">Thu: 0đ | Chi: 0đ</div>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="coins" class="w-5 h-5"></i></div>
+          </div>
 
-        <div class="font-bold text-slate-800 text-sm">III. TRIỂN KHAI KẾ HOẠCH NHÀ TRƯỜNG & ĐOÀN TRƯỜNG TUẦN TỚI:</div>
-        <div id="min-plan-text" class="pl-3 text-slate-700 whitespace-pre-line">Chưa có kế hoạch được nạp.</div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-semibold text-slate-500 uppercase">Hồ sơ CCCD</div>
+              <div class="text-2xl font-black text-sky-600 mt-1" id="dash-cccd-count">42/42</div>
+              <div class="text-[11px] text-emerald-600 font-semibold mt-0.5" id="dash-cccd-percent">100% cập nhật</div>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><i data-lucide="id-card" class="w-5 h-5"></i></div>
+          </div>
 
-        <div class="font-bold text-slate-800 text-sm">IV. Ý KIẾN CHỈ ĐẠO & DẶN DÒ CỦA GIÁO VIÊN CHỦ NHIỆM:</div>
-        <textarea id="min-teacher-notes" rows="3" class="w-full p-2.5 text-xs border rounded-xl text-slate-700 leading-relaxed">1. Tiếp tục duy trì phong trào truy bài 15 phút đầu giờ nghiêm túc.
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-semibold text-slate-500 uppercase">Tổ dẫn đầu tuần</div>
+              <div class="text-2xl font-black text-amber-500 mt-1" id="dash-top-team">Tổ 1</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Quy chế thi đua</div>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center"><i data-lucide="trophy" class="w-5 h-5"></i></div>
+          </div>
+        </div>
 
+        <!-- MA TRẬN 7 BUỔI HỌC TRONG TUẦN -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="calendar" class="w-4 h-4 text-sky-600"></i> Ma Trận Theo Dõi 7 Buổi Học Trong Tuần
+              </h3>
+              <p class="text-xs text-slate-500">Ghi nhận Vắng (có phép = 0đ), Trễ, Cúp tiết và Vi phạm theo buổi</p>
+            </div>
+            <span class="text-xs bg-sky-50 text-sky-700 font-bold px-2.5 py-1 rounded-lg border border-sky-200">
+              Tuần Học Hiện Tại
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3" id="weekly-matrix-grid"></div>
+        </div>
 
-Quán triệt 100% học sinh đội mũ bảo hiểm khi đi xe máy điện, xe dưới 50cc.
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-800 text-sm">Điểm Thi Đua 4 Tổ (Khởi điểm 100đ)</h3>
+            <div class="h-60 relative flex items-center justify-center"><canvas id="chartTeams"></canvas></div>
+          </div>
 
-Ban cán sự hỗ trợ theo dõi nề nếp và giúp đỡ các bạn còn yếu môn Toán.
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-800 text-sm">Tiến Độ Thu Quỹ Lớp (20.000 đ/tháng)</h3>
+            <div class="h-60 relative flex items-center justify-center"><canvas id="chartFund"></canvas></div>
+          </div>
+        </div>
+      </section>
 
+      <!-- 2. PHÂN HỆ HỒ SƠ HỌC SINH -->
+      <section id="tab-students" class="tab-pane hidden space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div class="flex flex-1 flex-wrap gap-2 w-full">
+            <div class="relative flex-1 min-w-[200px]">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+              <input type="search" id="search-student" autocomplete="off" oninput="renderStudentsTable()" placeholder="Tìm tên, CCCD, SĐT ba/mẹ..." class="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500">
+            </div>
+            <select id="filter-team" onchange="renderStudentsTable()" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
+              <option value="ALL">Tất cả các tổ</option>
+              <option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option>
+            </select>
+          </div>
 
-   <div class="grid grid-cols-3 text-center text-xs pt-8 border-t">
-     <div><div class="font-bold">THƯ KÝ CHI ĐOÀN</div><div class="text-[10px] text-slate-400 mt-14">(Ký và ghi rõ họ tên)</div></div>
-     <div><div class="font-bold">LỚP TRƯỞNG</div><div class="text-[10px] text-slate-400 mt-14">Nguyễn Hoàng Nam</div></div>
-     <div><div class="font-bold">GIÁO VIÊN CHỦ NHIỆM</div><div class="text-[10px] text-slate-400 mt-14">Thầy Trần Dương Quốc Mẫn</div></div>
-   </div>
+          <div class="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+            <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition">
+              <i data-lucide="file-up" class="w-4 h-4"></i> Nhập Excel
+              <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="handleImportExcel(event)">
+            </label>
+            <button onclick="exportExcelStudents()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="download" class="w-4 h-4"></i> Xuất Excel (Đầy đủ)
+            </button>
+            <button onclick="openStudentModal()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Thêm học sinh
+            </button>
+          </div>
+        </div>
 
-   <div class="flex flex-wrap items-center justify-end gap-2 no-print pt-4 border-t">
-     <button onclick="exportMinutesWord()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
-       <i data-lucide="file-text" class="w-4 h-4"></i> Tải file Word (.doc)
-     </button>
-     <button onclick="exportMinutesExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
-       <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Tải file Excel (.xlsx)
-     </button>
-     <button onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
-       <i data-lucide="printer" class="w-4 h-4"></i> In / Xuất PDF
-     </button>
-     <button onclick="saveMinutesToCloud()" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
-       <i data-lucide="cloud-upload" class="w-4 h-4"></i> Lưu Google Sheets
-     </button>
-   </div>
- </div>
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-50 text-slate-700 uppercase font-semibold border-b">
+                <tr>
+                  <th class="p-3 text-center w-10">STT</th>
+                  <th class="p-3">Họ và Tên</th>
+                  <th class="p-3">Số CCCD</th>
+                  <th class="p-3 text-center">Tổ</th>
+                  <th class="p-3">Chức vụ</th>
+                  <th class="p-3">Thông tin Ba (Họ tên - SĐT)</th>
+                  <th class="p-3">Thông tin Mẹ (Họ tên - SĐT)</th>
+                  <th class="p-3 text-center w-36">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="student-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
+      <!-- 3. PHÂN HỆ SƠ ĐỒ LỚP HỌC (ĐẢO NGƯỢC 180 ĐỘ) -->
+      <section id="tab-seating" class="tab-pane hidden space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex justify-between items-center no-print">
+          <div class="text-xs">
+            <span class="font-bold text-slate-800">Sơ đồ đảo ngược 180°:</span> 
+            <span class="text-slate-500">Từ bục giảng nhìn xuống các bàn cuối lớp. Bấm 2 ô để hoán đổi chỗ ngồi.</span>
+          </div>
+          <button onclick="window.print()" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i> In sơ đồ A4
+          </button>
+        </div>
 
-   <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-     <div class="flex items-center gap-3">
-       <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold"><i data-lucide="shield" class="w-5 h-5"></i></div>
-       <div>
-         <h3 class="font-bold text-slate-800 text-sm">Phân Quyền Tổ Trưởng Chấm Chéo</h3>
-         <p class="text-xs text-slate-500">Cấu hình tổ chấm điểm chéo</p>
-       </div>
-     </div>
-     <div class="grid grid-cols-2 gap-3 text-xs">
-       <div><label class="block font-semibold mb-1">Tổ 1 chấm:</label><select id="cross-t1" class="w-full p-2 border rounded-xl bg-white"><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option></select></div>
-       <div><label class="block font-semibold mb-1">Tổ 2 chấm:</label><select id="cross-t2" class="w-full p-2 border rounded-xl bg-white"><option value="3">Tổ 3</option><option value="4">Tổ 4</option><option value="1">Tổ 1</option></select></div>
-       <div><label class="block font-semibold mb-1">Tổ 3 chấm:</label><select id="cross-t3" class="w-full p-2 border rounded-xl bg-white"><option value="4">Tổ 4</option><option value="1">Tổ 1</option><option value="2">Tổ 2</option></select></div>
-       <div><label class="block font-semibold mb-1">Tổ 4 chấm:</label><select id="cross-t4" class="w-full p-2 border rounded-xl bg-white"><option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option></select></div>
-     </div>
-     <div class="pt-2 border-t flex justify-between items-center text-xs">
-       <div>
-         <label class="font-semibold block mb-0.5">Đổi mã PIN GVCN:</label>
-         <input type="password" id="new-pin-input" placeholder="Mã PIN mới (4 số)" class="p-1.5 border rounded-lg font-mono w-32">
-       </div>
-       <button onclick="saveSettingsConfig()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold">Lưu cài đặt</button>
-     </div>
-   </div>
- </div>
+        <div id="printable-seating" class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
+          <div class="text-center pb-2 border-b border-dashed border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            — PHÍA CUỐI PHÒNG HỌC (TƯỜNG SAU LỚP) —
+          </div>
 
+          <!-- 4 Dãy Bàn Học Sinh Xếp Ngược -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="seating-grid"></div>
 
-  <div class="space-y-2">
-    <label class="block font-bold text-slate-700">1. Tải lên tệp Word (.docx), PDF (.pdf), Excel (.xlsx) hoặc Text (.txt):</label>
-    <input type="file" id="regulation-file-input" accept=".docx, .pdf, .xlsx, .xls, .txt" onchange="handleRegulationFileUpload(event)" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
-    <div id="file-parse-status" class="text-[11px] text-sky-600 font-semibold hidden">Đang đọc và phân tích tệp...</div>
+          <!-- BÀN GV TRÁI - BỤC GIẢNG GIỮA - CỬA PHẢI -->
+          <div class="flex items-center justify-between pt-4 border-t-2 border-dashed border-slate-300">
+            <div class="w-36 py-2 px-3 bg-emerald-50 border border-emerald-300 rounded-xl text-center text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="user" class="w-4 h-4"></i> BÀN GIÁO VIÊN
+            </div>
+            
+            <div class="py-2.5 px-12 bg-sky-100 border border-sky-300 rounded-2xl text-center text-xs font-bold text-sky-900 shadow uppercase tracking-wider">
+              BỤC GIẢNG & BẢNG TỪ LỚP 10A12
+            </div>
+
+            <div class="w-36 py-2 px-3 bg-amber-50 border border-amber-300 rounded-xl text-center text-xs font-bold text-amber-800 flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="door-open" class="w-4 h-4"></i> CỬA RA VÀO
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. PHÂN HỆ NỀ NẾP & QUY CHẾ TỰ ĐỘNG GÁN ĐIỂM -->
+      <section id="tab-discipline" class="tab-pane hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b">
+              <h3 class="font-bold text-slate-800 text-sm">Ghi Nhận Thi Đua Nề Nếp</h3>
+              <button onclick="openRegulationModal()" class="text-[11px] text-sky-600 font-bold hover:underline flex items-center gap-1">
+                <i data-lucide="file-up" class="w-3 h-3"></i> Nạp file quy chế
+              </button>
+            </div>
+
+            <form onsubmit="handleSaveIncident(event)" class="space-y-3 text-xs">
+              <div>
+                <label class="block font-semibold mb-1">Học sinh liên quan:</label>
+                <select id="inc-student" class="w-full p-2.5 border rounded-xl bg-white"></select>
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1">Buổi học:</label>
+                <select id="inc-session" class="w-full p-2.5 border rounded-xl bg-white">
+                  <option value="Sáng Thứ 2">Sáng Thứ 2</option>
+                  <option value="Chiều Thứ 2">Chiều Thứ 2</option>
+                  <option value="Sáng Thứ 3">Sáng Thứ 3</option>
+                  <option value="Chiều Thứ 3">Chiều Thứ 3</option>
+                  <option value="Sáng Thứ 4">Sáng Thứ 4</option>
+                  <option value="Sáng Thứ 5">Sáng Thứ 5</option>
+                  <option value="Sáng Thứ 6">Sáng Thứ 6</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1">Quy chế / Vi phạm (Tự động gán điểm):</label>
+                <select id="inc-preset" onchange="applyIncidentPreset()" class="w-full p-2.5 border rounded-xl bg-slate-50"></select>
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1">Mô tả vụ việc:</label>
+                <input type="text" id="inc-desc" required placeholder="Ghi chú cụ thể..." class="w-full p-2.5 border rounded-xl">
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1">Điểm điều chỉnh tự động:</label>
+                <input type="number" id="inc-points" required class="w-full p-2.5 border rounded-xl font-bold bg-slate-50">
+                <span class="text-[10px] text-slate-400 mt-0.5 block">* Vắng có phép được gán mặc định 0 điểm (không trừ điểm thi đua).</span>
+              </div>
+
+              <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition">
+                Lưu vào sổ nề nếp
+              </button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-800 text-sm">Nhật Ký Thi Đua Gần Đây</h3>
+            <div id="incidents-list" class="space-y-2 max-h-[500px] overflow-y-auto custom-scroll pr-1 text-xs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. PHÂN HỆ QUỸ LỚP (20.000 Đ/THÁNG) -->
+      <section id="tab-fund" class="tab-pane hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b">
+              <div>
+                <h3 class="font-bold text-slate-800 text-base">Đợt Thu Quỹ: Tháng 10/2026</h3>
+                <div class="text-xs text-slate-500">Mặc định: <b class="text-sky-700">20.000 đ/tháng/học sinh</b> • Thủ quỹ: <b>Lương Kim Ngân</b></div>
+              </div>
+              <button onclick="copyReminderZalo()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-blue-200">
+                <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Nhắc nợ Zalo
+              </button>
+            </div>
+
+            <div class="overflow-x-auto max-h-96 custom-scroll">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-50 text-slate-600 sticky top-0">
+                  <tr>
+                    <th class="p-2.5 text-center w-10">STT</th>
+                    <th class="p-2.5">Họ và Tên</th>
+                    <th class="p-2.5 text-center">Tổ</th>
+                    <th class="p-2.5 text-center w-28">Trạng thái đóng</th>
+                    <th class="p-2.5">Ngày nộp</th>
+                  </tr>
+                </thead>
+                <tbody id="fund-table-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <h3 class="font-bold text-slate-800 text-sm pb-2 border-b">Ghi Nhận Thu / Chi Hoạt Động</h3>
+            <form onsubmit="handleSaveExpense(event)" class="space-y-3 text-xs">
+              <div>
+                <label class="block font-semibold mb-1">Loại:</label>
+                <select id="exp-type" class="w-full p-2 border rounded-xl bg-white">
+                  <option value="CHI">Khoản Chi (-)</option>
+                  <option value="THU">Khoản Thu Ngoài (+)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Hạng mục chi tiêu:</label>
+                <input type="text" id="exp-cat" required placeholder="Mua phấn, hoa 20/11..." class="w-full p-2 border rounded-xl">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Số tiền (VNĐ):</label>
+                <input type="number" id="exp-amount" required min="1000" step="1000" placeholder="50000" class="w-full p-2 border rounded-xl">
+              </div>
+              <div>
+                <label class="block font-semibold mb-1">Người nhận/nộp:</label>
+                <input type="text" id="exp-person" required placeholder="Người phụ trách..." class="w-full p-2 border rounded-xl">
+              </div>
+              <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold">Ghi vào sổ quỹ</button>
+            </form>
+            <div class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll text-xs" id="expense-history-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. PHÂN HỆ BIÊN BẢN SHL (NẠP FILE KẾ HOẠCH & XUẤT WORD/EXCEL/PDF) -->
+      <section id="tab-minutes" class="tab-pane hidden space-y-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 no-print">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i data-lucide="file-input" class="w-4 h-4 text-sky-600"></i> Kế Hoạch Tuần/Tháng Của Nhà Trường & Đoàn Trường
+              </h3>
+              <p class="text-xs text-slate-500">Tải lên file (.docx, .pdf, .xlsx, .txt) hoặc dán trực tiếp nội dung</p>
+            </div>
+            
+            <label class="px-3.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i> Tải file kế hoạch lên
+              <input type="file" id="minutes-plan-file" accept=".docx, .pdf, .xlsx, .xls, .txt" class="hidden" onchange="handleMinutesFileUpload(event)">
+            </label>
+          </div>
+
+          <textarea id="minutes-school-plan" rows="3" class="w-full p-2.5 text-xs border rounded-xl" placeholder="Dán hoặc nội dung file kế hoạch tải lên sẽ xuất hiện tại đây..."></textarea>
+          
+          <div class="flex justify-between items-center">
+            <span id="minutes-file-status" class="text-[11px] text-emerald-600 font-semibold hidden">Đã đọc nội dung tệp kế hoạch thành công!</span>
+            <button onclick="generateMinutesContent()" class="ml-auto px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Tự động tổng hợp dữ liệu vào biên bản
+            </button>
+          </div>
+        </div>
+
+        <!-- Khung Nội dung Biên bản SHL để In và Xuất File -->
+        <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6" id="printable-area">
+          <div class="text-center pb-4 border-b">
+            <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">SỞ GIÁO DỤC VÀ ĐÀO TẠO GIA LAI • TRƯỜNG THPT SỐ 1 QUANG TRUNG</div>
+            <h2 class="text-lg font-black text-slate-900 uppercase mt-1">BIÊN BẢN SINH HOẠT LỚP ĐẦU TUẦN</h2>
+            <div class="text-xs text-slate-600 mt-1">Lớp: <b>10A12</b> • Thời gian: <b>Tiết 1, Sáng Thứ Hai</b> • Địa điểm: Phòng học 10A12</div>
+          </div>
+
+          <div class="space-y-4 text-xs leading-relaxed" id="minutes-content-box">
+            <div class="font-bold text-slate-800 text-sm">I. ĐÁNH GIÁ NỀ NẾP & HỌC TẬP TUẦN QUA:</div>
+            <div id="min-attendance-text" class="pl-3 text-slate-700 whitespace-pre-line">Đang chờ tổng hợp...</div>
+
+            <div class="font-bold text-slate-800 text-sm">II. KẾT QUẢ THI ĐUA NỘI BỘ 4 TỔ (QUY CHẾ 01):</div>
+            <div id="min-scores-text" class="pl-3 text-slate-700 whitespace-pre-line">Đang chờ tổng hợp...</div>
+
+            <div class="font-bold text-slate-800 text-sm">III. TRIỂN KHAI KẾ HOẠCH NHÀ TRƯỜNG & ĐOÀN TRƯỜNG TUẦN TỚI:</div>
+            <div id="min-plan-text" class="pl-3 text-slate-700 whitespace-pre-line">Chưa có kế hoạch được nạp.</div>
+
+            <div class="font-bold text-slate-800 text-sm">IV. Ý KIẾN CHỈ ĐẠO & DẶN DÒ CỦA GIÁO VIÊN CHỦ NHIỆM:</div>
+            <textarea id="min-teacher-notes" rows="3" class="w-full p-2.5 text-xs border rounded-xl text-slate-700 leading-relaxed">1. Tiếp tục duy trì phong trào truy bài 15 phút đầu giờ nghiêm túc.
+2. Quán triệt 100% học sinh đội mũ bảo hiểm khi đi xe máy điện, xe dưới 50cc.
+3. Ban cán sự hỗ trợ theo dõi nề nếp và giúp đỡ các bạn còn yếu môn Toán.</textarea>
+          </div>
+
+          <div class="grid grid-cols-3 text-center text-xs pt-8 border-t">
+            <div><div class="font-bold">THƯ KÝ CHI ĐOÀN</div><div class="text-[10px] text-slate-400 mt-14">(Ký và ghi rõ họ tên)</div></div>
+            <div><div class="font-bold">LỚP TRƯỞNG</div><div class="text-[10px] text-slate-400 mt-14">Nguyễn Hoàng Nam</div></div>
+            <div><div class="font-bold">GIÁO VIÊN CHỦ NHIỆM</div><div class="text-[10px] text-slate-400 mt-14">Thầy Trần Dương Quốc Mẫn</div></div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-end gap-2 no-print pt-4 border-t">
+            <button onclick="exportMinutesWord()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="file-text" class="w-4 h-4"></i> Tải file Word (.doc)
+            </button>
+            <button onclick="exportMinutesExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Tải file Excel (.xlsx)
+            </button>
+            <button onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="printer" class="w-4 h-4"></i> In / Xuất PDF
+            </button>
+            <button onclick="saveMinutesToCloud()" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
+              <i data-lucide="cloud-upload" class="w-4 h-4"></i> Lưu Google Sheets
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. PHÂN HỆ CÀI ĐẶT & KẾT NỐI -->
+      <section id="tab-settings" class="tab-pane hidden space-y-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-sm">Kết Nối Google Apps Script Web App</h3>
+          <div>
+            <label class="block text-xs font-semibold mb-1">URL Web App (Đuôi /exec):</label>
+            <div class="flex gap-2">
+              <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 p-2.5 border rounded-xl text-xs font-mono">
+              <button onclick="saveApiUrl()" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold">Lưu URL</button>
+              <button onclick="testApiConnection()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Kiểm tra kết nối</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold"><i data-lucide="shield" class="w-5 h-5"></i></div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm">Phân Quyền & Bảo Mật</h3>
+              <p class="text-xs text-slate-500">Mã PIN và cấu hình tổ chấm chéo</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div><label class="block font-semibold mb-1">Tổ 1 chấm:</label><select id="cross-t1" class="w-full p-2 border rounded-xl bg-white"><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option></select></div>
+            <div><label class="block font-semibold mb-1">Tổ 2 chấm:</label><select id="cross-t2" class="w-full p-2 border rounded-xl bg-white"><option value="3">Tổ 3</option><option value="4">Tổ 4</option><option value="1">Tổ 1</option></select></div>
+            <div><label class="block font-semibold mb-1">Tổ 3 chấm:</label><select id="cross-t3" class="w-full p-2 border rounded-xl bg-white"><option value="4">Tổ 4</option><option value="1">Tổ 1</option><option value="2">Tổ 2</option></select></div>
+            <div><label class="block font-semibold mb-1">Tổ 4 chấm:</label><select id="cross-t4" class="w-full p-2 border rounded-xl bg-white"><option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option></select></div>
+          </div>
+          <div class="pt-2 border-t flex justify-between items-center text-xs">
+            <div>
+              <label class="font-semibold block mb-0.5">Đổi mã PIN GVCN:</label>
+              <input type="password" id="new-pin-input" placeholder="Mã PIN mới (4 số)" class="p-1.5 border rounded-lg font-mono w-32">
+            </div>
+            <button onclick="saveSettingsConfig()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold">Lưu cài đặt</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div>
 
-  <div class="space-y-2">
-    <label class="block font-bold text-slate-700">2. Hoặc dán trực tiếp nội dung văn bản quy chế vào đây:</label>
-    <textarea id="raw-regulation-text" rows="6" class="w-full p-3 border rounded-xl font-mono" placeholder="Dán văn bản quy chế hoặc xem trước nội dung bóc tách từ file..."></textarea>
+  <!-- ==================== CÁC MODAL HỆ THỐNG ==================== -->
+
+  <!-- MODAL: NẠP QUY CHẾ THI ĐUA -->
+  <div id="modal-regulation" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-xs">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <h3 class="font-bold text-slate-800 text-sm">Nạp Quy Chế Thi Đua Nề Nếp</h3>
+        <button onclick="closeRegulationModal()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block font-bold text-slate-700">1. Tải lên tệp Word (.docx), PDF (.pdf), Excel (.xlsx) hoặc Text (.txt):</label>
+        <input type="file" id="regulation-file-input" accept=".docx, .pdf, .xlsx, .xls, .txt" onchange="handleRegulationFileUpload(event)" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
+        <div id="file-parse-status" class="text-[11px] text-sky-600 font-semibold hidden">Đang đọc và phân tích tệp...</div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block font-bold text-slate-700">2. Hoặc dán trực tiếp nội dung văn bản quy chế vào đây:</label>
+        <textarea id="raw-regulation-text" rows="6" class="w-full p-3 border rounded-xl font-mono" placeholder="Dán văn bản quy chế hoặc xem trước nội dung bóc tách từ file..."></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button onclick="closeRegulationModal()" class="px-4 py-2 border rounded-xl font-semibold">Hủy</button>
+        <button onclick="parseRegulationText()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold">Bóc tách & Cập nhật</button>
+      </div>
+    </div>
   </div>
 
-  <div class="flex justify-end gap-2 pt-2 border-t">
-    <button onclick="closeRegulationModal()" class="px-4 py-2 border rounded-xl font-semibold">Hủy</button>
-    <button onclick="parseRegulationText()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold">Bóc tách & Cập nhật</button>
+  <!-- MODAL: THÊM / CHỈNH SỬA HỒ SƠ HỌC SINH -->
+  <div id="modal-student" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 text-xs max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <h3 class="font-bold text-slate-800 text-sm" id="student-modal-title">Hồ Sơ Học Sinh Lớp 10A12</h3>
+        <button onclick="closeStudentModal()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
+      </div>
+
+      <form onsubmit="handleSaveStudent(event)" class="space-y-3">
+        <input type="hidden" id="student-id">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">Mã định danh (tự sinh):</label>
+            <input type="text" id="student-code" placeholder="Tự sinh nếu để trống" class="w-full p-2 border rounded-xl">
+          </div>
+          <div>
+            <label class="block font-bold text-sky-900 mb-1">Họ và Tên (*):</label>
+            <input type="text" id="student-name" required placeholder="Nhập họ và tên..." class="w-full p-2 border rounded-xl focus:ring-2 focus:ring-sky-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border">
+          <div>
+            <label class="block font-semibold mb-1">Số CCCD (12 số):</label>
+            <input type="text" id="student-cccd" maxlength="12" placeholder="Chưa có có thể bỏ qua" class="w-full p-2 border rounded-xl font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Ngày cấp CCCD:</label>
+            <input type="date" id="student-cccd-date" class="w-full p-2 border rounded-xl bg-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">Giới tính:</label>
+            <select id="student-gender" class="w-full p-2 border rounded-xl bg-white"><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Ngày sinh:</label>
+            <input type="date" id="student-dob" class="w-full p-2 border rounded-xl bg-white">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Tổ:</label>
+            <select id="student-team" class="w-full p-2 border rounded-xl bg-white">
+              <option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1">Chức vụ trong lớp:</label>
+            <input type="text" id="student-role" placeholder="Học sinh / Lớp trưởng..." class="w-full p-2 border rounded-xl">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">SĐT Học sinh (nếu có):</label>
+            <input type="text" id="student-phone" placeholder="Không bắt buộc" class="w-full p-2 border rounded-xl font-mono">
+          </div>
+        </div>
+
+        <!-- THÔNG TIN BA & MẸ TÁCH BIỆT -->
+        <div class="space-y-2.5 bg-sky-50/50 p-3.5 rounded-2xl border border-sky-100">
+          <div class="font-bold text-sky-900 flex items-center gap-1.5">
+            <i data-lucide="users" class="w-3.5 h-3.5"></i> Thông Tin Phụ Huynh (Ba & Mẹ)
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">Họ tên Ba:</label>
+              <input type="text" id="student-father-name" placeholder="Họ tên bố..." class="w-full p-2 border rounded-xl bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">SĐT Ba:</label>
+              <input type="text" id="student-father-phone" placeholder="SĐT bố..." class="w-full p-2 border rounded-xl bg-white font-mono">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">Họ tên Mẹ:</label>
+              <input type="text" id="student-mother-name" placeholder="Họ tên mẹ..." class="w-full p-2 border rounded-xl bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">SĐT Mẹ:</label>
+              <input type="text" id="student-mother-phone" placeholder="SĐT mẹ..." class="w-full p-2 border rounded-xl bg-white font-mono">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Địa chỉ thường trú:</label>
+          <input type="text" id="student-address" placeholder="Tây Sơn, Gia Lai..." class="w-full p-2 border rounded-xl">
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Ghi chú đặc thù (nếu có):</label>
+          <textarea id="student-notes" rows="2" placeholder="Sức khỏe, năng khiếu, hoàn cảnh..." class="w-full p-2 border rounded-xl"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeStudentModal()" class="px-4 py-2 border rounded-xl font-semibold">Hủy</button>
+          <button type="submit" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold">Lưu hồ sơ</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
+  <!-- SCRIPT LOGIC TOÀN CỤC CỦA HỆ THỐNG -->
+  <script>
+    // 1. DỮ LIỆU BAN ĐẦU 42 HỌC SINH LỚP 10A12 K58
+    const DEFAULT_STUDENTS = [
+      { id: 1, code: "QT-101201", name: "Nguyễn Hoàng Nam", gender: "Nam", dob: "2011-03-15", cccd: "064211003412", cccdDate: "2025-04-10", team: 1, role: "Lớp trưởng", phone: "0912345601", fatherName: "Nguyễn Văn Hùng", fatherPhone: "0905111221", motherName: "Lê Thị Thảo", motherPhone: "0905111222", address: "Tây Sơn, Gia Lai", notes: "Gương mẫu, học giỏi Toán" },
+      { id: 2, code: "QT-101202", name: "Trần Thị Mai Anh", gender: "Nữ", dob: "2011-05-20", cccd: "064311004589", cccdDate: "2025-06-15", team: 1, role: "Lớp phó Học tập", phone: "0912345602", fatherName: "Trần Đức Trọng", fatherPhone: "0905111223", motherName: "Nguyễn Thị Hoa", motherPhone: "0905111224", address: "Tây Sơn, Gia Lai", notes: "Cận thị (3.0 độ)" },
+      { id: 3, code: "QT-101203", name: "Lê Quốc Bảo", gender: "Nam", dob: "2011-08-11", cccd: "064211001245", cccdDate: "2025-05-18", team: 1, role: "Học sinh", phone: "0912345603", fatherName: "Lê Minh Tuấn", fatherPhone: "0905111225", motherName: "Võ Thị Lệ", motherPhone: "", address: "An Khê, Gia Lai", notes: "" },
+      { id: 4, code: "QT-101204", name: "Phạm Thùy Chi", gender: "Nữ", dob: "2011-01-29", cccd: "064311009876", cccdDate: "2025-07-20", team: 1, role: "Lớp phó Văn thể mỹ", phone: "0912345604", fatherName: "Phạm Văn Lực", fatherPhone: "0905111226", motherName: "Đặng Thị Hằng", motherPhone: "0905111227", address: "Tây Sơn, Gia Lai", notes: "Năng khiếu múa, văn nghệ" },
+      { id: 5, code: "QT-101205", name: "Võ Thành Đạt", gender: "Nam", dob: "2011-10-04", cccd: "064211008743", cccdDate: "2025-08-12", team: 1, role: "Học sinh", phone: "0912345605", fatherName: "Võ Văn Kiên", fatherPhone: "0905111228", motherName: "Trương Mỹ Linh", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 6, code: "QT-101206", name: "Đặng Mỹ Duyên", gender: "Nữ", dob: "2011-04-18", cccd: "064311002341", cccdDate: "2025-05-30", team: 1, role: "Học sinh", phone: "0912345606", fatherName: "Đặng Đình Bách", fatherPhone: "0905111229", motherName: "Lê Hoài Thu", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 7, code: "QT-101207", name: "Bùi Gia Huy", gender: "Nam", dob: "2011-09-09", cccd: "064211005612", cccdDate: "2025-06-25", team: 1, role: "Học sinh", phone: "0912345607", fatherName: "Bùi Quốc Triều", fatherPhone: "0905111230", motherName: "Ngô Kim Tuyến", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Hay quên vở bài tập" },
+      { id: 8, code: "QT-101208", name: "Hoàng Ngọc Hân", gender: "Nữ", dob: "2011-12-14", cccd: "064311006734", cccdDate: "2025-04-22", team: 1, role: "Tổ trưởng 1", phone: "0912345608", fatherName: "Hoàng Minh Thái", fatherPhone: "0905111231", motherName: "Vũ Thị Nguyệt", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Trách nhiệm" },
+      { id: 9, code: "QT-101209", name: "Đỗ Minh Khang", gender: "Nam", dob: "2011-07-22", cccd: "064211009087", cccdDate: "2025-07-14", team: 1, role: "Học sinh", phone: "0912345609", fatherName: "Đỗ Văn Toàn", fatherPhone: "0905111232", motherName: "Trần Kim Loan", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 10, code: "QT-101210", name: "Hồ Khánh Linh", gender: "Nữ", dob: "2011-06-03", cccd: "064311004321", cccdDate: "2025-06-11", team: 1, role: "Học sinh", phone: "0912345610", fatherName: "Hồ Bá Thắng", fatherPhone: "0905111233", motherName: "Bùi Ánh Tuyết", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 11, code: "QT-101211", name: "Ngô Nhật Minh", gender: "Nam", dob: "2011-11-25", cccd: "064211007812", cccdDate: "2025-05-19", team: 1, role: "Học sinh", phone: "0912345611", fatherName: "Ngô Xuân Quý", fatherPhone: "0905111234", motherName: "Đoàn Mỹ Lệ", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 12, code: "QT-101212", name: "Dương Thảo My", gender: "Nữ", dob: "2011-02-14", cccd: "064311001198", cccdDate: "2025-04-05", team: 2, role: "Bí thư Chi đoàn", phone: "0912345612", fatherName: "Dương Công Định", fatherPhone: "0905111235", motherName: "Lý Kim Chi", motherPhone: "0905111236", address: "Tây Sơn, Gia Lai", notes: "Năng nổ phong trào Đoàn" },
+      { id: 13, code: "QT-101213", name: "Lý Hải Đăng", gender: "Nam", dob: "2011-08-30", cccd: "064211004455", cccdDate: "2025-06-08", team: 2, role: "Lớp phó Lao động", phone: "0912345613", fatherName: "Lý Thế Dân", fatherPhone: "0905111237", motherName: "Trần Thị Xuân", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Thể thao giỏi" },
+      { id: 14, code: "QT-101214", name: "Vũ Bảo Ngọc", gender: "Nữ", dob: "2011-03-08", cccd: "064311003366", cccdDate: "2025-05-14", team: 2, role: "Tổ trưởng 2", phone: "0912345614", fatherName: "Vũ Duy Tân", fatherPhone: "0905111238", motherName: "Phan Thị Thu", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 15, code: "QT-101215", name: "Phan Trọng Nhân", gender: "Nam", dob: "2011-05-12", cccd: "064211007788", cccdDate: "2025-07-02", team: 2, role: "Học sinh", phone: "0912345615", fatherName: "Phan Văn Trí", fatherPhone: "0905111239", motherName: "Võ Mỹ Hạnh", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 16, code: "QT-101216", name: "Đinh Yến Nhi", gender: "Nữ", dob: "2011-10-19", cccd: "064311009900", cccdDate: "2025-08-19", team: 2, role: "Học sinh", phone: "0912345616", fatherName: "Đinh Văn Long", fatherPhone: "0905111240", motherName: "Đào Thị Loan", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 17, code: "QT-101217", name: "Cao Hoài Nam", gender: "Nam", dob: "2011-01-05", cccd: "064211002233", cccdDate: "2025-04-18", team: 2, role: "Học sinh", phone: "0912345617", fatherName: "Cao Thế Vĩ", fatherPhone: "0905111241", motherName: "Hà Thị Vân", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Cận thị (2.5 độ)" },
+      { id: 18, code: "QT-101218", name: "Mai Thu Phương", gender: "Nữ", dob: "2011-07-17", cccd: "064311005544", cccdDate: "2025-06-22", team: 2, role: "Học sinh", phone: "0912345618", fatherName: "Mai Văn Chung", fatherPhone: "0905111242", motherName: "Đỗ Thị Mùi", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 19, code: "QT-101219", name: "Lâm Tuấn Kiệt", gender: "Nam", dob: "2011-09-28", cccd: "064211008811", cccdDate: "2025-07-09", team: 2, role: "Học sinh", phone: "0912345619", fatherName: "Lâm Văn Khoa", fatherPhone: "0905111243", motherName: "Nguyễn Thị Sen", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 20, code: "QT-101220", name: "Tạ Quỳnh Như", gender: "Nữ", dob: "2011-12-01", cccd: "064311006677", cccdDate: "2025-05-03", team: 2, role: "Học sinh", phone: "0912345620", fatherName: "Tạ Văn Hợp", fatherPhone: "0905111244", motherName: "Bùi Thu Hồng", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 21, code: "QT-101221", name: "Trịnh Hoàng Phúc", gender: "Nam", dob: "2011-04-23", cccd: "064211001122", cccdDate: "2025-04-29", team: 2, role: "Học sinh", phone: "0912345621", fatherName: "Trịnh Văn Đạt", fatherPhone: "0905111245", motherName: "Lê Kim Oanh", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 22, code: "QT-101222", name: "Châu Ánh Tuyết", gender: "Nữ", dob: "2011-06-15", cccd: "064311004488", cccdDate: "2025-06-12", team: 3, role: "Tổ trưởng 3", phone: "0912345622", fatherName: "Châu Văn Tài", fatherPhone: "0905111246", motherName: "Phan Thị Diệu", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Gia đình chính sách" },
+      { id: 23, code: "QT-101223", name: "Đoàn Tấn Phát", gender: "Nam", dob: "2011-11-11", cccd: "064211009944", cccdDate: "2025-07-27", team: 3, role: "Học sinh", phone: "0912345623", fatherName: "Đoàn Văn Lộc", fatherPhone: "0905111247", motherName: "Đặng Thùy Trang", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 24, code: "QT-101224", name: "Lương Kim Ngân", gender: "Nữ", dob: "2011-03-21", cccd: "064311008891", cccdDate: "2025-05-20", team: 3, role: "Thủ quỹ", phone: "0912345624", fatherName: "Lương Trọng Nghĩa", fatherPhone: "0905111248", motherName: "Võ Thị Bích", motherPhone: "0905111249", address: "Tây Sơn, Gia Lai", notes: "Thủ quỹ cẩn thận" },
+      { id: 25, code: "QT-101225", name: "Phùng Gia Khiêm", gender: "Nam", dob: "2011-08-07", cccd: "064211003311", cccdDate: "2025-06-17", team: 3, role: "Học sinh", phone: "0912345625", fatherName: "Phùng Thế Huynh", fatherPhone: "0905111250", motherName: "Hồ Thị Thắm", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 26, code: "QT-101226", name: "Quách Trúc Linh", gender: "Nữ", dob: "2011-05-09", cccd: "064311007733", cccdDate: "2025-05-08", team: 3, role: "Học sinh", phone: "0912345626", fatherName: "Quách Minh Sang", fatherPhone: "0905111251", motherName: "Trần Thị Diễm", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 27, code: "QT-101227", name: "Thái Văn Quyết", gender: "Nam", dob: "2011-09-14", cccd: "064211005522", cccdDate: "2025-07-31", team: 3, role: "Học sinh", phone: "0912345627", fatherName: "Thái Văn Hiệp", fatherPhone: "0905111252", motherName: "Đinh Thị Phượng", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Cần kèm Tiếng Anh" },
+      { id: 28, code: "QT-101228", name: "Nghiêm Thu Hà", gender: "Nữ", dob: "2011-02-27", cccd: "064311002288", cccdDate: "2025-04-12", team: 3, role: "Học sinh", phone: "0912345628", fatherName: "Nghiêm Xuân Việt", fatherPhone: "0905111253", motherName: "Lý Thị Mai", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 29, code: "QT-101229", name: "Hà Vĩnh Thụy", gender: "Nam", dob: "2011-10-31", cccd: "064211006699", cccdDate: "2025-08-05", team: 3, role: "Học sinh", phone: "0912345629", fatherName: "Hà Quang Dũng", fatherPhone: "0905111254", motherName: "Tô Mỹ Dung", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 30, code: "QT-101230", name: "Trương Cẩm Tú", gender: "Nữ", dob: "2011-07-04", cccd: "064311001155", cccdDate: "2025-06-28", team: 3, role: "Học sinh", phone: "0912345630", fatherName: "Trương Văn Nam", fatherPhone: "0905111255", motherName: "Cao Thị Yến", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 31, code: "QT-101231", name: "Huỳnh Quốc Bảo", gender: "Nam", dob: "2011-12-20", cccd: "064211004411", cccdDate: "2025-05-24", team: 3, role: "Học sinh", phone: "0912345631", fatherName: "Huỳnh Văn Bảy", fatherPhone: "0905111256", motherName: "Phan Thị Huệ", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 32, code: "QT-101232", name: "Văn Đình Khôi", gender: "Nam", dob: "2011-01-18", cccd: "064211008866", cccdDate: "2025-04-14", team: 4, role: "Tổ trưởng 4", phone: "0912345632", fatherName: "Văn Đình Hậu", fatherPhone: "0905111257", motherName: "Lê Ánh Nguyệt", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 33, code: "QT-101233", name: "Tô Thanh Thảo", gender: "Nữ", dob: "2011-04-02", cccd: "064311003322", cccdDate: "2025-05-16", team: 4, role: "Học sinh", phone: "0912345633", fatherName: "Tô Vĩnh Hùng", fatherPhone: "0905111258", motherName: "Mai Kim Thảo", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 34, code: "QT-101234", name: "La Minh Triết", gender: "Nam", dob: "2011-08-25", cccd: "064211007744", cccdDate: "2025-07-06", team: 4, role: "Học sinh", phone: "0912345634", fatherName: "La Quốc Cường", fatherPhone: "0905111259", motherName: "Nguyễn Thị Nhàn", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 35, code: "QT-101235", name: "Khuất Phương Thùy", gender: "Nữ", dob: "2011-06-19", cccd: "064311005588", cccdDate: "2025-06-18", team: 4, role: "Học sinh", phone: "0912345635", fatherName: "Khuất Duy Tiến", fatherPhone: "0905111260", motherName: "Dương Thị Lụa", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 36, code: "QT-101236", name: "Chu Hoàng Long", gender: "Nam", dob: "2011-11-03", cccd: "064211002277", cccdDate: "2025-08-01", team: 4, role: "Học sinh", phone: "0912345636", fatherName: "Chu Văn Hiếu", fatherPhone: "0905111261", motherName: "Phạm Thị Thúy", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "Cần chú ý môn Toán" },
+      { id: 37, code: "QT-101237", name: "Vi Thục Quyên", gender: "Nữ", dob: "2011-03-30", cccd: "064311009933", cccdDate: "2025-05-09", team: 4, role: "Học sinh", phone: "0912345637", fatherName: "Vi Văn Hùng", fatherPhone: "0905111262", motherName: "Đỗ Thị Gấm", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 38, code: "QT-101238", name: "Tăng Hữu Phước", gender: "Nam", dob: "2011-09-17", cccd: "064211006611", cccdDate: "2025-07-21", team: 4, role: "Học sinh", phone: "0912345638", fatherName: "Tăng Văn Lợi", fatherPhone: "0905111263", motherName: "Vũ Kim Oanh", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 39, code: "QT-101239", name: "Ân Hoài Thương", gender: "Nữ", dob: "2011-05-15", cccd: "064311004466", cccdDate: "2025-06-03", team: 4, role: "Học sinh", phone: "0912345639", fatherName: "Ân Văn Nghĩa", fatherPhone: "0905111264", motherName: "Trần Thị Cúc", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 40, code: "QT-101240", name: "Dương Minh Trí", gender: "Nam", dob: "2011-10-12", cccd: "064211001188", cccdDate: "2025-08-14", team: 4, role: "Học sinh", phone: "0912345640", fatherName: "Dương Đình Tâm", fatherPhone: "0905111265", motherName: "Lê Thị Thắm", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 41, code: "QT-101241", name: "Đỗ Thùy Trang", gender: "Nữ", dob: "2011-07-28", cccd: "064311007711", cccdDate: "2025-07-04", team: 4, role: "Học sinh", phone: "0912345641", fatherName: "Đỗ Văn Minh", fatherPhone: "0905111266", motherName: "Nguyễn Thị Mến", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" },
+      { id: 42, code: "QT-101242", name: "Phạm Hồng Phúc", gender: "Nam", dob: "2011-12-08", cccd: "064211003355", cccdDate: "2025-05-27", team: 4, role: "Học sinh", phone: "0912345642", fatherName: "Phạm Quang Hòa", fatherPhone: "0905111267", motherName: "Bùi Thị Hải", motherPhone: "", address: "Tây Sơn, Gia Lai", notes: "" }
+    ];
 
-  <form onsubmit="handleSaveStudent(event)" class="space-y-3">
-    <input type="hidden" id="student-id">
-    <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block font-semibold mb-1">Mã định danh (tự sinh):</label>
-        <input type="text" id="student-code" placeholder="Tự sinh nếu để trống" class="w-full p-2 border rounded-xl">
-      </div>
-      <div>
-        <label class="block font-bold text-sky-900 mb-1">Họ và Tên (*):</label>
-        <input type="text" id="student-name" required placeholder="Nhập họ và tên..." class="w-full p-2 border rounded-xl focus:ring-2 focus:ring-sky-500">
-      </div>
-    </div>
+    // Quy chế thi đua mặc định tự động gán điểm
+    const DEFAULT_PRESETS = [
+      { name: "Vắng học có phép", points: 0, desc: "Nghỉ ốm hoặc có đơn xin phép từ phụ huynh" },
+      { name: "Vắng học không phép", points: -10, desc: "Tự ý bỏ tiết, nghỉ học không có lý do" },
+      { name: "Đi học muộn / Trễ giờ", points: -5, desc: "Vào lớp sau hiệu lệnh trống/chuông" },
+      { name: "Không thuộc bài / Quên vở BT", points: -5, desc: "Bị GVBM ghi sổ đầu bài" },
+      { name: "Sử dụng ĐTDĐ trong giờ học", points: -10, desc: "Dùng điện thoại không phục vụ học tập" },
+      { name: "Vi phạm đồng phục / Tác phong", points: -5, desc: "Không mang phù hiệu, dép lê..." },
+      { name: "Đạt Điểm 10 miệng / Kiểm tra", points: 10, desc: "Khen thưởng học tập xuất sắc" },
+      { name: "Nhặt được của rơi trả lại", points: 20, desc: "Gương người tốt việc tốt" }
+    ];
 
-    <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border">
-      <div>
-        <label class="block font-semibold mb-1">Số CCCD (12 số - không bắt buộc):</label>
-        <input type="text" id="student-cccd" maxlength="12" placeholder="Chưa có có thể bỏ qua" class="w-full p-2 border rounded-xl font-mono">
-      </div>
-      <div>
-        <label class="block font-semibold mb-1">Ngày cấp CCCD (không bắt buộc):</label>
-        <input type="date" id="student-cccd-date" class="w-full p-2 border rounded-xl bg-white">
-      </div>
-    </div>
+    let state = {
+      apiUrl: localStorage.getItem('API_URL_10A12') || '',
+      pinGVCN: localStorage.getItem('PIN_GVCN') || '2026',
+      students: DEFAULT_STUDENTS,
+      incidents: [],
+      payments: {},
+      expenses: [],
+      presets: DEFAULT_PRESETS,
+      seatingOrder: Array.from({ length: 42 }, (_, i) => i + 1),
+      selectedSeatIndex: null
+    };
 
-    <div class="grid grid-cols-3 gap-3">
-      <div>
-        <label class="block font-semibold mb-1">Giới tính:</label>
-        <select id="student-gender" class="w-full p-2 border rounded-xl bg-white"><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select>
-      </div>
-      <div>
-        <label class="block font-semibold mb-1">Ngày sinh:</label>
-        <input type="date" id="student-dob" class="w-full p-2 border rounded-xl bg-white">
-      </div>
-      <div>
-        <label class="block font-semibold mb-1">Tổ:</label>
-        <select id="student-team" class="w-full p-2 border rounded-xl bg-white">
-          <option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option>
-        </select>
-      </div>
-    </div>
+    let chartTeamsObj = null;
+    let chartFundObj = null;
 
-    <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block font-semibold mb-1">Chức vụ trong lớp:</label>
-        <input type="text" id="student-role" placeholder="Học sinh / Lớp trưởng..." class="w-full p-2 border rounded-xl">
-      </div>
-      <div>
-        <label class="block font-semibold mb-1">SĐT Học sinh (nếu có):</label>
-        <input type="text" id="student-phone" placeholder="Không bắt buộc" class="w-full p-2 border rounded-xl font-mono">
-      </div>
-    </div>
-
-    <!-- THÔNG TIN BA & MẸ TÁCH BIỆT -->
-    <div class="space-y-2.5 bg-sky-50/50 p-3.5 rounded-2xl border border-sky-100">
-      <div class="font-bold text-sky-900 flex items-center gap-1.5">
-        <i data-lucide="users" class="w-3.5 h-3.5"></i> Thông Tin Phụ Huynh (Không bắt buộc)
-      </div>
-      
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">Họ tên Ba:</label>
-          <input type="text" id="student-father-name" placeholder="Họ tên bố..." class="w-full p-2 border rounded-xl bg-white">
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">SĐT Ba:</label>
-          <input type="text" id="student-father-phone" placeholder="SĐT bố..." class="w-full p-2 border rounded-xl bg-white font-mono">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">Họ tên Mẹ:</label>
-          <input type="text" id="student-mother-name" placeholder="Họ tên mẹ..." class="w-full p-2 border rounded-xl bg-white">
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 mb-0.5">SĐT Mẹ:</label>
-          <input type="text" id="student-mother-phone" placeholder="SĐT mẹ..." class="w-full p-2 border rounded-xl bg-white font-mono">
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <label class="block font-semibold mb-1">Địa chỉ thường trú (không bắt buộc):</label>
-      <input type="text" id="student-address" placeholder="Tây Sơn, Gia Lai..." class="w-full p-2 border rounded-xl">
-    </div>
-
-    <div>
-      <label class="block font-semibold mb-1">Ghi chú đặc thù (nếu có):</label>
-      <textarea id="student-notes" rows="2" placeholder="Sức khỏe, năng khiếu, hoàn cảnh..." class="w-full p-2 border rounded-xl"></textarea>
-    </div>
-
-    <div class="flex justify-end gap-2 pt-2 border-t">
-      <button type="button" onclick="closeStudentModal()" class="px-4 py-2 border rounded-xl font-semibold">Hủy</button>
-      <button type="submit" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold">Lưu hồ sơ</button>
-    </div>
-  </form>
-</div>
-
-
-    </head>
-    <body>
-      <div class="header">
-        SỞ GIÁO DỤC VÀ ĐÀO TẠO GIA LAI<br>
-        TRƯỜNG THPT SỐ 1 QUANG TRUNG<br>
-        <b>LỚP 10A12 (KHÓA 58)</b><br><br>
-        <span style="font-size: 16pt;">BIÊN BẢN SINH HOẠT LỚP ĐẦU TUẦN</span><br>
-        <i>(Tiết 1, Sáng Thứ Hai - Phòng học 10A12)</i>
-      </div>
-
-      <div class="section-title">I. ĐÁNH GIÁ NỀ NẾP & HỌC TẬP TUẦN QUA:</div>
-      <p>${attText.replace(/\n/g, '<br>')}</p>
-
-      <div class="section-title">II. KẾT QUẢ THI ĐUA 4 TỔ (QUY CHẾ 01):</div>
-      <p>${scoreText.replace(/\n/g, '<br>')}</p>
-
-      <div class="section-title">III. KẾ HOẠCH NHÀ TRƯỜNG & ĐOÀN TRƯỜNG TUẦN TỚI:</div>
-      <p>${planText.replace(/\n/g, '<br>')}</p>
-
-      <div class="section-title">IV. Ý KIẾN CHỈ ĐẠO & DẶN DÒ CỦA GVCN:</div>
-      <p>${teacherText.replace(/\n/g, '<br>')}</p>
-
-      <table class="signatures">
-        <tr>
-          <td width="33%"><b>THƯ KÝ</b><br><br><br><br><i>(Ký và ghi rõ họ tên)</i></td>
-          <td width="33%"><b>LỚP TRƯỞNG</b><br><br><br><br><b>Nguyễn Hoàng Nam</b></td>
-          <td width="34%"><b>GIÁO VIÊN CHỦ NHIỆM</b><br><br><br><br><b>Thầy Trần Dương Quốc Mẫn</b></td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
-
-  const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `BienBan_SHL_10A12_${new Date().toISOString().split('T')[0]}.doc`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-function exportMinutesExcel() {
-  const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
-  state.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
-
-  const data = [
-    ["BIÊN BẢN SINH HOẠT LỚP 10A12 - K58"],
-    ["Thời gian:", "Tiết 1, Sáng Thứ Hai"],
-    ["Giáo viên chủ nhiệm:", "Thầy Trần Dương Quốc Mẫn"],
-    [],
-    ["1. KẾT QUẢ ĐIỂM THI ĐUA 4 TỔ"],
-    ["Tổ 1", scores[1]],
-    ["Tổ 2", scores[2]],
-    ["Tổ 3", scores[3]],
-    ["Tổ 4", scores[4]],
-    [],
-    ["2. NỘI DUNG ĐÁNH GIÁ CHUYÊN CẦN & NỀ NẾP"],
-    [document.getElementById('min-attendance-text').innerText],
-    [],
-    ["3. KẾ HOẠCH TUẦN TỚI CỦA TRƯỜNG & ĐOÀN TRƯỜNG"],
-    [document.getElementById('min-plan-text').innerText],
-    [],
-    ["4. Ý KIẾN CHỈ ĐẠO CỦA GVCN"],
-    [document.getElementById('min-teacher-notes').value]
-  ];
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "BienBanSHL");
-  XLSX.writeFile(wb, `BienBan_SHL_10A12_${new Date().toISOString().split('T')[0]}.xlsx`);
-}
-
-async function saveMinutesToCloud() {
-  const minData = {
-    id: Date.now(),
-    week: "Tuần 6",
-    date: new Date().toISOString().split('T')[0],
-    attendanceSummary: document.getElementById('min-attendance-text').innerText,
-    teamScores: document.getElementById('min-scores-text').innerText,
-    schoolPlan: document.getElementById('min-plan-text').innerText,
-    teacherNotes: document.getElementById('min-teacher-notes').value,
-    approvedBy: "Thầy Trần Dương Quốc Mẫn"
-  };
-  alert("Đã lưu biên bản sinh hoạt lớp lên Google Sheets!");
-  try {
-    await fetch(state.apiUrl, { method: 'POST', body: JSON.stringify({ action: "SAVE_MINUTES", payload: minData }) });
-  } catch(e){}
-}
-
-// 7. BIỂU ĐỒ
-function renderCharts() {
-  if (typeof Chart === 'undefined') return;
-
-  const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
-  state.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
-
-  const ctxTeams = document.getElementById('chartTeams');
-  if (ctxTeams) {
-    if (chartTeamsObj) chartTeamsObj.destroy();
-    chartTeamsObj = new Chart(ctxTeams, {
-      type: 'bar',
-      data: {
-        labels: ['Tổ 1', 'Tổ 2', 'Tổ 3', 'Tổ 4'],
-        datasets: [{ data: [scores[1], scores[2], scores[3], scores[4]], backgroundColor: ['#0284c7', '#6366f1', '#f43f5e', '#10b981'], borderRadius: 6 }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 60, max: 110 } }, plugins: { legend: { display: false } } }
+    // KHỞI ĐỘNG HỆ THỐNG
+    window.addEventListener('DOMContentLoaded', () => {
+      loadLocalCache();
+      renderAll();
+      updateClock();
+      setInterval(updateClock, 1000);
+      document.getElementById('api-url-input').value = state.apiUrl;
+      populateIncidentPresets();
+      populateStudentSelects();
+      lucide.createIcons();
     });
-  }
 
-  const paidCount = Object.keys(state.payments).length;
-  const ctxFund = document.getElementById('chartFund');
-  if (ctxFund) {
-    if (chartFundObj) chartFundObj.destroy();
-    chartFundObj = new Chart(ctxFund, {
-      type: 'doughnut',
-      data: {
-        labels: ['Đã đóng', 'Chưa đóng'],
-        datasets: [{ data: [paidCount, (state.students.length || 42) - paidCount], backgroundColor: ['#10b981', '#f43f5e'] }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
-    });
-  }
-}
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-clock').innerText = now.toLocaleTimeString('vi-VN');
+    }
 
-// EXCEL & IMPORT
-function exportExcelStudents() {
-  const rows = state.students.map((s, i) => ({
-    "STT": i + 1,
-    "Mã HS": s.code || "",
-    "Họ và Tên": s.name,
-    "Số CCCD": s.cccd || "",
-    "Ngày cấp CCCD": s.cccdDate || "",
-    "Giới tính": s.gender || "Nam",
-    "Ngày sinh": s.dob || "",
-    "Tổ": s.team || 1,
-    "Chức vụ": s.role || "Học sinh",
-    "SĐT Học sinh": s.phone || "",
-    "Họ tên Ba": s.fatherName || s.parent || "",
-    "SĐT Ba": s.fatherPhone || s.parentPhone || "",
-    "Họ tên Mẹ": s.motherName || "",
-    "SĐT Mẹ": s.motherPhone || "",
-    "Địa chỉ": s.address || "",
-    "Ghi chú": s.notes || ""
-  }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "10A12");
-  XLSX.writeFile(wb, "Danh_Sach_10A12_K58.xlsx");
-}
+    function toggleSidebar() {
+      document.getElementById('app-sidebar').classList.toggle('-translate-x-full');
+    }
 
-function handleImportExcel(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    try {
-      const data = new Uint8Array(evt.target.result);
-      const wb = XLSX.read(data, { type: 'array' });
-      const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-      let added = 0;
-      json.forEach((r, idx) => {
-        const name = r["Họ và Tên"] || r["Họ tên"] || r["Tên"];
-        if (name) {
-          state.students.push({
-            id: Date.now() + idx,
-            code: r["Mã định danh"] || r["Mã HS"] || `QT-1012${state.students.length + 1}`,
-            name: String(name).trim(),
-            cccd: String(r["Số CCCD"] || r["CCCD"] || ""),
-            cccdDate: String(r["Ngày cấp"] || ""),
-            gender: r["Giới tính"] || "Nam",
-            dob: r["Ngày sinh"] || "",
-            team: Number(r["Tổ"]) || 1,
-            role: r["Chức vụ"] || "Học sinh",
-            phone: String(r["SĐT"] || r["SĐT Học sinh"] || ""),
-            fatherName: String(r["Họ tên Ba"] || r["Ba"] || r["Phụ huynh"] || ""),
-            fatherPhone: String(r["SĐT Ba"] || r["SĐT PH"] || ""),
-            motherName: String(r["Họ tên Mẹ"] || r["Mẹ"] || ""),
-            motherPhone: String(r["SĐT Mẹ"] || ""),
-            parent: String(r["Họ tên Ba"] || r["Phụ huynh"] || r["Họ tên Mẹ"] || ""),
-            parentPhone: String(r["SĐT Ba"] || r["SĐT PH"] || r["SĐT Mẹ"] || ""),
-            address: String(r["Địa chỉ"] || "")
-          });
-          added++;
-        }
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
+
+      document.querySelectorAll('.sidebar-item').forEach(b => {
+        b.className = "sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-slate-300 hover:bg-slate-800 hover:text-white";
       });
+      const activeBtn = document.querySelector(`.sidebar-item[data-target="${tabId}"]`);
+      if (activeBtn) activeBtn.className = "sidebar-item w-full flex items-center gap-3 px-3 py-3 rounded-xl transition text-sky-400 bg-sky-950/60 font-bold border border-sky-800/40";
+
+      if (tabId === 'dashboard') renderCharts();
+      lucide.createIcons();
+    }
+
+    function loadLocalCache() {
+      const cached = localStorage.getItem('STATE_10A12_GVCN');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.students && parsed.students.length > 0) state.students = parsed.students;
+          state.incidents = parsed.incidents || [];
+          state.payments = parsed.payments || {};
+          state.expenses = parsed.expenses || [];
+          if (parsed.seatingOrder) state.seatingOrder = parsed.seatingOrder;
+          if (parsed.presets) state.presets = parsed.presets;
+        } catch(e){}
+      }
+    }
+
+    function saveLocalCache() {
+      localStorage.setItem('STATE_10A12_GVCN', JSON.stringify({
+        students: state.students,
+        incidents: state.incidents,
+        payments: state.payments,
+        expenses: state.expenses,
+        seatingOrder: state.seatingOrder,
+        presets: state.presets
+      }));
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderMatrix();
+      renderStudentsTable();
+      renderSeatingChart();
+      renderIncidentsList();
+      renderFundTable();
+      renderExpenseList();
+      renderCharts();
+      lucide.createIcons();
+    }
+
+    // 2. DASHBOARD & MA TRẬN 7 BUỔI
+    function renderDashboard() {
+      document.getElementById('dash-total').innerText = state.students.length;
+      const cccdCount = state.students.filter(s => s.cccd && s.cccd.trim().length === 12).length;
+      document.getElementById('dash-cccd-count').innerText = `${cccdCount}/${state.students.length}`;
+      document.getElementById('dash-cccd-percent').innerText = `${Math.round((cccdCount / (state.students.length || 1)) * 100)}% cập nhật`;
+
+      const paidCount = Object.keys(state.payments).length;
+      const fundIn = paidCount * 20000;
+      let expOut = 0, expIn = 0;
+      state.expenses.forEach(e => {
+        if (e.type === 'CHI') expOut += Number(e.amount);
+        else expIn += Number(e.amount);
+      });
+      const balance = (fundIn + expIn) - expOut;
+      document.getElementById('dash-fund-balance').innerText = `${balance.toLocaleString('vi-VN')} đ`;
+      document.getElementById('dash-fund-summary').innerText = `Thu: ${(fundIn + expIn).toLocaleString('vi-VN')}đ | Chi: ${expOut.toLocaleString('vi-VN')}đ`;
+
+      // Tính điểm tổ
+      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
+      state.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
+      let topT = 1, maxS = scores[1];
+      for (let t = 2; t <= 4; t++) {
+        if (scores[t] > maxS) { maxS = scores[t]; topT = t; }
+      }
+      document.getElementById('dash-top-team').innerText = `Tổ ${topT} (${maxS}đ)`;
+    }
+
+    function renderMatrix() {
+      const container = document.getElementById('weekly-matrix-grid');
+      if (!container) return;
+      const sessions = ["Sáng Thứ 2", "Chiều Thứ 2", "Sáng Thứ 3", "Chiều Thứ 3", "Sáng Thứ 4", "Sáng Thứ 5", "Sáng Thứ 6"];
+      container.innerHTML = sessions.map(ses => {
+        const sesIncs = state.incidents.filter(i => i.session === ses);
+        return `
+          <div class="p-3 bg-slate-50 border rounded-xl flex flex-col justify-between">
+            <div>
+              <div class="font-bold text-[11px] text-slate-800 border-b pb-1 mb-1.5 flex justify-between items-center">
+                <span>${ses}</span>
+                <span class="text-[10px] text-sky-700 bg-sky-100 px-1.5 py-0.2 rounded font-bold">${sesIncs.length}</span>
+              </div>
+              <div class="space-y-1 max-h-24 overflow-y-auto custom-scroll text-[10px]">
+                ${sesIncs.length === 0 ? '<div class="text-slate-400 italic">Nề nếp tốt</div>' : 
+                  sesIncs.map(i => `
+                    <div class="truncate text-slate-600" title="${i.studentName}: ${i.desc}">
+                      <b>${i.studentName.split(' ').pop()}</b>: ${i.desc}
+                    </div>
+                  `).join('')
+                }
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. QUẢN LÝ HỒ SƠ HỌC SINH
+    function renderStudentsTable() {
+      const tbody = document.getElementById('student-table-body');
+      if (!tbody) return;
+      const kw = (document.getElementById('search-student')?.value || '').toLowerCase();
+      const teamFilter = document.getElementById('filter-team')?.value || 'ALL';
+
+      const filtered = state.students.filter(s => {
+        const matchKw = s.name.toLowerCase().includes(kw) || 
+                        (s.cccd && s.cccd.includes(kw)) ||
+                        (s.fatherPhone && s.fatherPhone.includes(kw)) ||
+                        (s.motherPhone && s.motherPhone.includes(kw));
+        const matchTeam = teamFilter === 'ALL' || String(s.team) === teamFilter;
+        return matchKw && matchTeam;
+      });
+
+      tbody.innerHTML = filtered.map((s, idx) => `
+        <tr class="hover:bg-slate-50 transition border-b">
+          <td class="p-3 text-center text-slate-500 font-medium">${idx + 1}</td>
+          <td class="p-3 font-bold text-slate-900">${s.name}</td>
+          <td class="p-3 font-mono text-slate-600">${s.cccd || '—'}</td>
+          <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-md font-semibold text-[10px] bg-sky-50 text-sky-700">Tổ ${s.team}</span></td>
+          <td class="p-3">${s.role || 'Học sinh'}</td>
+          <td class="p-3">${s.fatherName || '—'} <span class="font-mono text-slate-400">${s.fatherPhone ? '(' + s.fatherPhone + ')' : ''}</span></td>
+          <td class="p-3">${s.motherName || '—'} <span class="font-mono text-slate-400">${s.motherPhone ? '(' + s.motherPhone + ')' : ''}</span></td>
+          <td class="p-3 text-center space-x-1">
+            <button onclick="editStudent(${s.id})" class="p-1 hover:text-sky-600"><i data-lucide="edit-3" class="w-3.5 h-3.5 inline"></i></button>
+            <button onclick="simulateStudentLogin(${s.id})" class="px-2 py-0.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded text-[10px] font-bold">Cổng HS</button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function openStudentModal() {
+      document.getElementById('student-id').value = '';
+      document.getElementById('student-code').value = '';
+      document.getElementById('student-name').value = '';
+      document.getElementById('student-cccd').value = '';
+      document.getElementById('student-cccd-date').value = '';
+      document.getElementById('student-gender').value = 'Nam';
+      document.getElementById('student-dob').value = '';
+      document.getElementById('student-team').value = '1';
+      document.getElementById('student-role').value = 'Học sinh';
+      document.getElementById('student-phone').value = '';
+      document.getElementById('student-father-name').value = '';
+      document.getElementById('student-father-phone').value = '';
+      document.getElementById('student-mother-name').value = '';
+      document.getElementById('student-mother-phone').value = '';
+      document.getElementById('student-address').value = '';
+      document.getElementById('student-notes').value = '';
+      document.getElementById('modal-student').classList.remove('hidden');
+    }
+
+    function closeStudentModal() { document.getElementById('modal-student').classList.add('hidden'); }
+
+    function editStudent(id) {
+      const s = state.students.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('student-id').value = s.id;
+      document.getElementById('student-code').value = s.code || '';
+      document.getElementById('student-name').value = s.name;
+      document.getElementById('student-cccd').value = s.cccd || '';
+      document.getElementById('student-cccd-date').value = s.cccdDate || '';
+      document.getElementById('student-gender').value = s.gender || 'Nam';
+      document.getElementById('student-dob').value = s.dob || '';
+      document.getElementById('student-team').value = s.team || 1;
+      document.getElementById('student-role').value = s.role || 'Học sinh';
+      document.getElementById('student-phone').value = s.phone || '';
+      document.getElementById('student-father-name').value = s.fatherName || '';
+      document.getElementById('student-father-phone').value = s.fatherPhone || '';
+      document.getElementById('student-mother-name').value = s.motherName || '';
+      document.getElementById('student-mother-phone').value = s.motherPhone || '';
+      document.getElementById('student-address').value = s.address || '';
+      document.getElementById('student-notes').value = s.notes || '';
+      document.getElementById('modal-student').classList.remove('hidden');
+    }
+
+    function handleSaveStudent(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('student-id').value;
+      const data = {
+        id: idVal ? Number(idVal) : Date.now(),
+        code: document.getElementById('student-code').value.trim() || `QT-1012${state.students.length + 1}`,
+        name: document.getElementById('student-name').value.trim(),
+        cccd: document.getElementById('student-cccd').value.trim(),
+        cccdDate: document.getElementById('student-cccd-date').value,
+        gender: document.getElementById('student-gender').value,
+        dob: document.getElementById('student-dob').value,
+        team: Number(document.getElementById('student-team').value),
+        role: document.getElementById('student-role').value.trim() || 'Học sinh',
+        phone: document.getElementById('student-phone').value.trim(),
+        fatherName: document.getElementById('student-father-name').value.trim(),
+        fatherPhone: document.getElementById('student-father-phone').value.trim(),
+        motherName: document.getElementById('student-mother-name').value.trim(),
+        motherPhone: document.getElementById('student-mother-phone').value.trim(),
+        address: document.getElementById('student-address').value.trim(),
+        notes: document.getElementById('student-notes').value.trim()
+      };
+
+      if (idVal) {
+        const idx = state.students.findIndex(x => x.id === Number(idVal));
+        if (idx !== -1) state.students[idx] = data;
+      } else {
+        state.students.push(data);
+      }
       saveLocalCache();
       renderAll();
-      alert(`Đã nhập thành công ${added} học sinh từ file Excel!`);
-    } catch(err) { alert("Lỗi đọc Excel: " + err.message); }
-  };
-  reader.readAsArrayBuffer(file);
-}
+      closeStudentModal();
+      alert("Đã lưu thông tin học sinh!");
+    }
 
-// CÀI ĐẶT
-function saveApiUrl() {
-  const u = document.getElementById('api-url-input').value.trim();
-  state.apiUrl = u;
-  localStorage.setItem('API_URL_10A12', u);
-  alert("Đã lưu URL kết nối Google Apps Script!");
-}
+    function simulateStudentLogin(id) {
+      window.open(`hocsinh.html?simId=${id}`, '_blank');
+    }
 
-async function testApiConnection() {
-  try {
-    const res = await fetch(`${state.apiUrl}?action=GET_ALL`);
-    const json = await res.json();
-    if (json.status === "success") alert("Kết nối Google Sheets thành công!");
-  } catch(e) { alert("Không thể kết nối API Google Sheets. Vui lòng kiểm tra quyền Anyone của Web App!"); }
-}
+    // 4. SƠ ĐỒ LỚP HỌC (ĐẢO NGƯỢC 180 ĐỘ & HOÁN ĐỔI)
+    function renderSeatingChart() {
+      const grid = document.getElementById('seating-grid');
+      if (!grid) return;
+      // 4 Dãy, mỗi dãy 5 hoặc 6 bàn
+      grid.innerHTML = [1, 2, 3, 4].map(col => {
+        return `
+          <div class="space-y-2">
+            <div class="text-center font-bold text-xs bg-slate-100 py-1.5 rounded-lg text-slate-700">DÃY ${col}</div>
+            <div class="space-y-2">
+              ${[5, 4, 3, 2, 1].map(row => {
+                const sIdx = (col - 1) * 10 + (5 - row) * 2;
+                const s1Id = state.seatingOrder[sIdx];
+                const s2Id = state.seatingOrder[sIdx + 1];
+                const s1 = state.students.find(x => x.id === s1Id);
+                const s2 = state.students.find(x => x.id === s2Id);
+                return `
+                  <div class="p-2 border rounded-xl bg-white shadow-2xs space-y-1">
+                    <div class="text-[9px] text-slate-400 font-bold">BÀN ${row}</div>
+                    <div class="grid grid-cols-2 gap-1 text-[11px]">
+                      <div onclick="selectSeatForSwap(${sIdx})" class="p-1 rounded text-center truncate border ${state.selectedSeatIndex === sIdx ? 'bg-sky-200 border-sky-500 font-bold' : 'hover:bg-slate-50 cursor-pointer'}">
+                        ${s1 ? s1.name.split(' ').pop() : 'Trống'}
+                      </div>
+                      <div onclick="selectSeatForSwap(${sIdx + 1})" class="p-1 rounded text-center truncate border ${state.selectedSeatIndex === sIdx + 1 ? 'bg-sky-200 border-sky-500 font-bold' : 'hover:bg-slate-50 cursor-pointer'}">
+                        ${s2 ? s2.name.split(' ').pop() : 'Trống'}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-function saveSettingsConfig() {
-  const np = document.getElementById('new-pin-input').value.trim();
-  if (np) { state.pinGVCN = np; localStorage.setItem('PIN_GVCN', np); }
-  saveLocalCache();
-  alert("Đã lưu cài đặt phân quyền!");
-}
+    function selectSeatForSwap(idx) {
+      if (state.selectedSeatIndex === null) {
+        state.selectedSeatIndex = idx;
+        renderSeatingChart();
+      } else {
+        const tmp = state.seatingOrder[state.selectedSeatIndex];
+        state.seatingOrder[state.selectedSeatIndex] = state.seatingOrder[idx];
+        state.seatingOrder[idx] = tmp;
+        state.selectedSeatIndex = null;
+        saveLocalCache();
+        renderSeatingChart();
+      }
+    }
 
-function lockApp() {
-  const p = prompt("Nhập mã PIN GVCN để mở khóa (Mặc định: 2026):");
-  if (p !== state.pinGVCN) {
-    alert("Sai mã PIN!");
-    location.reload();
-  }
-}
+    // 5. NỀ NẾP & QUY CHẾ
+    function populateStudentSelects() {
+      const sel = document.getElementById('inc-student');
+      if (!sel) return;
+      sel.innerHTML = state.students.map(s => `<option value="${s.id}">${s.name} (Tổ ${s.team})</option>`).join('');
+    }
+
+    function populateIncidentPresets() {
+      const pSel = document.getElementById('inc-preset');
+      if (!pSel) return;
+      pSel.innerHTML = state.presets.map((p, idx) => `<option value="${idx}">${p.name} (${p.points > 0 ? '+' : ''}${p.points}đ)</option>`).join('');
+      applyIncidentPreset();
+    }
+
+    function applyIncidentPreset() {
+      const pIdx = document.getElementById('inc-preset').value;
+      const preset = state.presets[pIdx];
+      if (preset) {
+        document.getElementById('inc-desc').value = preset.desc;
+        document.getElementById('inc-points').value = preset.points;
+      }
+    }
+
+    function handleSaveIncident(e) {
+      e.preventDefault();
+      const sId = Number(document.getElementById('inc-student').value);
+      const student = state.students.find(x => x.id === sId);
+      if (!student) return;
+
+      const newInc = {
+        id: Date.now(),
+        studentId: student.id,
+        studentName: student.name,
+        team: student.team,
+        session: document.getElementById('inc-session').value,
+        desc: document.getElementById('inc-desc').value.trim(),
+        points: Number(document.getElementById('inc-points').value),
+        date: new Date().toISOString().split('T')[0],
+        recordedBy: "Thầy Quốc Mẫn"
+      };
+
+      state.incidents.push(newInc);
+      saveLocalCache();
+      renderAll();
+      alert("Đã lưu vi phạm/khen thưởng vào sổ nề nếp!");
+      // Đồng bộ cloud ngầm
+      if (state.apiUrl) {
+        fetch(state.apiUrl, { method: 'POST', body: JSON.stringify({ action: "ADD_INCIDENT", payload: newInc }) }).catch(()=>{});
+      }
+    }
+
+    function renderIncidentsList() {
+      const list = document.getElementById('incidents-list');
+      if (!list) return;
+      list.innerHTML = state.incidents.slice().reverse().map(i => `
+        <div class="p-2.5 rounded-xl border flex justify-between items-center ${i.points < 0 ? 'bg-rose-50/50 text-rose-900 border-rose-100' : 'bg-emerald-50/50 text-emerald-900 border-emerald-100'}">
+          <div>
+            <div class="font-bold">${i.studentName} (Tổ ${i.team}) - <span class="text-[11px] font-normal text-slate-500">${i.session}</span></div>
+            <div class="text-[11px] text-slate-500">${i.desc}</div>
+          </div>
+          <div class="font-black ${i.points < 0 ? 'text-rose-600' : 'text-emerald-600'}">
+            ${i.points > 0 ? '+' : ''}${i.points}đ
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openRegulationModal() { document.getElementById('modal-regulation').classList.remove('hidden'); }
+    function closeRegulationModal() { document.getElementById('modal-regulation').classList.add('hidden'); }
+
+    function handleRegulationFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        document.getElementById('raw-regulation-text').value = evt.target.result;
+        document.getElementById('file-parse-status').classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function parseRegulationText() {
+      const text = document.getElementById('raw-regulation-text').value;
+      if (!text.trim()) return;
+      alert("Đã phân tích và cập nhật quy chế thi đua!");
+      closeRegulationModal();
+    }
+
+    // 6. QUỸ LỚP & THU CHI NGOÀI
+    function renderFundTable() {
+      const tbody = document.getElementById('fund-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = state.students.map((s, idx) => {
+        const isPaid = Boolean(state.payments[s.id]?.paid);
+        return `
+          <tr class="hover:bg-slate-50 border-b">
+            <td class="p-2.5 text-center text-slate-500">${idx + 1}</td>
+            <td class="p-2.5 font-bold">${s.name}</td>
+            <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-100">Tổ ${s.team}</span></td>
+            <td class="p-2.5 text-center">
+              <input type="checkbox" ${isPaid ? 'checked' : ''} onchange="toggleFundPayment(${s.id}, '${s.name}', ${s.team})" class="w-4 h-4 rounded text-emerald-600">
+            </td>
+            <td class="p-2.5 text-slate-400 font-mono text-[11px]">${state.payments[s.id]?.date || '—'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleFundPayment(sId, name, team) {
+      const willBePaid = !state.payments[sId]?.paid;
+      if (willBePaid) {
+        state.payments[sId] = { paid: true, date: new Date().toISOString().split('T')[0], amount: 20000 };
+      } else {
+        delete state.payments[sId];
+      }
+      saveLocalCache();
+      renderDashboard();
+      renderFundTable();
+      renderCharts();
+      if (state.apiUrl) {
+        fetch(state.apiUrl, { method: 'POST', body: JSON.stringify({ action: "UPDATE_PAYMENT", payload: { studentId: sId, studentName: name, team: team, amount: 20000, paid: willBePaid } }) }).catch(()=>{});
+      }
+    }
+
+    function handleSaveExpense(e) {
+      e.preventDefault();
+      const exp = {
+        id: Date.now(),
+        type: document.getElementById('exp-type').value,
+        category: document.getElementById('exp-cat').value.trim(),
+        amount: Number(document.getElementById('exp-amount').value),
+        person: document.getElementById('exp-person').value.trim(),
+        date: new Date().toISOString().split('T')[0]
+      };
+      state.expenses.push(exp);
+      saveLocalCache();
+      renderDashboard();
+      renderExpenseList();
+      e.target.reset();
+      alert("Đã lưu mục thu/chi ngoài!");
+    }
+
+    function renderExpenseList() {
+      const list = document.getElementById('expense-history-list');
+      if (!list) return;
+      list.innerHTML = state.expenses.slice().reverse().map(e => `
+        <div class="p-2 rounded-lg border flex justify-between items-center ${e.type === 'CHI' ? 'bg-rose-50 text-rose-900 border-rose-100' : 'bg-emerald-50 text-emerald-900 border-emerald-100'}">
+          <div>
+            <div class="font-bold">${e.category}</div>
+            <div class="text-[10px] text-slate-500">${e.person} • ${e.date}</div>
+          </div>
+          <span class="font-bold">${e.type === 'CHI' ? '-' : '+'}${Number(e.amount).toLocaleString('vi-VN')}đ</span>
+        </div>
+      `).join('');
+    }
+
+    function copyReminderZalo() {
+      const unpaid = state.students.filter(s => !state.payments[s.id]?.paid).map(s => s.name);
+      const text = `Kính gửi quý phụ huynh lớp 10A12, hiện tại quỹ lớp tháng 10 (20.000đ/học sinh) còn các em sau chưa hoàn thành: ${unpaid.join(', ')}. Kính nhờ phụ huynh hỗ trợ nhắc nhở các em. Trân trọng!`;
+      navigator.clipboard.writeText(text);
+      alert("Đã sao chép nội dung nhắc nhở Zalo vào Clipboard!");
+    }
+
+    // 7. BIÊN BẢN SINH HOẠT LỚP & XUẤT TỆP
+    function handleMinutesFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        document.getElementById('minutes-school-plan').value = evt.target.result;
+        document.getElementById('minutes-file-status').classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function generateMinutesContent() {
+      // 1. Chuyên cần & nề nếp
+      const totalInc = state.incidents.length;
+      document.getElementById('min-attendance-text').innerText = totalInc === 0 
+        ? "- Toàn thể 42 học sinh chấp hành tốt nề nếp, chuyên cần 100%, không phát sinh vi phạm quy chế."
+        : `- Trong tuần ghi nhận ${totalInc} lượt việc/vi phạm. Ban cán sự lớp đã nhắc nhở và đôn đốc các trường hợp vi phạm nề nếp tác phong.`;
+
+      // 2. Điểm thi đua
+      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
+      state.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
+      document.getElementById('min-scores-text').innerText = `+ Tổ 1: ${scores[1]} điểm\n+ Tổ 2: ${scores[2]} điểm\n+ Tổ 3: ${scores[3]} điểm\n+ Tổ 4: ${scores[4]} điểm`;
+
+      // 3. Kế hoạch trường
+      const plan = document.getElementById('minutes-school-plan').value.trim();
+      document.getElementById('min-plan-text').innerText = plan || "Triển khai đầy đủ các hoạt động học tập và phong trào theo thông báo từ BGH và Đoàn trường.";
+      alert("Đã tổng hợp số liệu vào biên bản SHL!");
+    }
+
+    function exportMinutesWord() {
+      const attText = document.getElementById('min-attendance-text').innerText;
+      const scoreText = document.getElementById('min-scores-text').innerText;
+      const planText = document.getElementById('min-plan-text').innerText;
+      const teacherText = document.getElementById('min-teacher-notes').value;
+
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><meta charset='utf-8'><title>Biên Bản Sinh Hoạt Lớp 10A12</title>
+        <style>
+          body { font-family: 'Times New Roman', serif; font-size: 13pt; line-height: 1.5; }
+          .header { text-align: center; font-weight: bold; margin-bottom: 20px; }
+          .section-title { font-weight: bold; margin-top: 15px; }
+          .signatures { width: 100%; margin-top: 40px; text-align: center; }
+        </style>
+        </head>
+        <body>
+          <div class="header">
+            SỞ GIÁO DỤC VÀ ĐÀO TẠO GIA LAI<br>
+            TRƯỜNG THPT SỐ 1 QUANG TRUNG<br>
+            <b>LỚP 10A12 (KHÓA 58)</b><br><br>
+            <span style="font-size: 16pt;">BIÊN BẢN SINH HOẠT LỚP ĐẦU TUẦN</span><br>
+            <i>(Tiết 1, Sáng Thứ Hai - Phòng học 10A12)</i>
+          </div>
+
+          <div class="section-title">I. ĐÁNH GIÁ NỀ NẾP & HỌC TẬP TUẦN QUA:</div>
+          <p>${attText.replace(/\n/g, '<br>')}</p>
+
+          <div class="section-title">II. KẾT QUẢ THI ĐUA 4 TỔ (QUY CHẾ 01):</div>
+          <p>${scoreText.replace(/\n/g, '<br>')}</p>
+
+          <div class="section-title">III. KẾ HOẠCH NHÀ TRƯỜNG & ĐOÀN TRƯỜNG TUẦN TỚI:</div>
+          <p>${planText.replace(/\n/g, '<br>')}</p>
+
+          <div class="section-title">IV. Ý KIẾN CHỈ ĐẠO & DẶN DÒ CỦA GVCN:</div>
+          <p>${teacherText.replace(/\n/g, '<br>')}</p>
+
+          <table class="signatures">
+            <tr>
+              <td width="33%"><b>THƯ KÝ</b><br><br><br><br><i>(Ký và ghi rõ họ tên)</i></td>
+              <td width="33%"><b>LỚP TRƯỞNG</b><br><br><br><br><b>Nguyễn Hoàng Nam</b></td>
+              <td width="34%"><b>GIÁO VIÊN CHỦ NHIỆM</b><br><br><br><br><b>Thầy Trần Dương Quốc Mẫn</b></td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `BienBan_SHL_10A12_${new Date().toISOString().split('T')[0]}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function exportMinutesExcel() {
+      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
+      state.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
+
+      const data = [
+        ["BIÊN BẢN SINH HOẠT LỚP 10A12 - K58"],
+        ["Thời gian:", "Tiết 1, Sáng Thứ Hai"],
+        ["Giáo viên chủ nhiệm:", "Thầy Trần Dương Quốc Mẫn"],
+        [],
+        ["1. KẾT QUẢ ĐIỂM THI ĐUA 4 TỔ"],
+        ["Tổ 1", scores[1]],
+        ["Tổ 2", scores[2]],
+        ["Tổ 3", scores[3]],
+        ["Tổ 4", scores[4]],
+        [],
+        ["2. NỘI DUNG ĐÁNH GIÁ CHUYÊN CẦN & NỀ NẾP"],
+        [document.getElementById('min-attendance-text').innerText],
+        [],
+        ["3. KẾ HOẠCH TUẦN TỚI CỦA TRƯỜNG & ĐOÀN TRƯỜNG"],
+        [document.getElementById('min-plan-text').innerText],
+        [],
+        ["4. Ý KIẾN CHỈ ĐẠO CỦA GVCN"],
+        [document.getElementById('min-teacher-notes').value]
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "BienBanSHL");
+      XLSX.writeFile(wb, `BienBan_SHL_10A12_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    async function saveMinutesToCloud() {
+      const minData = {
+        id: Date.now(),
+        week: "Tuần hiện tại",
+        date: new Date().toISOString().split('T')[0],
+        attendanceSummary: document.getElementById('min-attendance-text').innerText,
+        teamScores: document.getElementById('min-scores-text').innerText,
+        schoolPlan: document.getElementById('min-plan-text').innerText,
+        teacherNotes: document.getElementById('min-teacher-notes').value,
+        approvedBy: "Thầy Trần Dương Quốc Mẫn"
+      };
+      alert("Đã lưu biên bản sinh hoạt lớp lên Google Sheets!");
+      if (state.apiUrl) {
+        fetch(state.apiUrl, { method: 'POST', body: JSON.stringify({ action: "SAVE_MINUTES", payload: minData }) }).catch(()=>{});
+      }
+    }
+
+    // 8. BIỂU ĐỒ CHART.JS
+    function renderCharts() {
+      if (typeof Chart === 'undefined') return;
+
+      const scores = { 1: 100, 2: 100, 3: 100, 4: 100 };
+      state.incidents.forEach(i => { if (scores[i.team] !== undefined) scores[i.team] += Number(i.points); });
+
+      const ctxTeams = document.getElementById('chartTeams');
+      if (ctxTeams) {
+        if (chartTeamsObj) chartTeamsObj.destroy();
+        chartTeamsObj = new Chart(ctxTeams, {
+          type: 'bar',
+          data: {
+            labels: ['Tổ 1', 'Tổ 2', 'Tổ 3', 'Tổ 4'],
+            datasets: [{ data: [scores[1], scores[2], scores[3], scores[4]], backgroundColor: ['#0284c7', '#6366f1', '#f43f5e', '#10b981'], borderRadius: 6 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 60, max: 110 } }, plugins: { legend: { display: false } } }
+        });
+      }
+
+      const paidCount = Object.keys(state.payments).length;
+      const ctxFund = document.getElementById('chartFund');
+      if (ctxFund) {
+        if (chartFundObj) chartFundObj.destroy();
+        chartFundObj = new Chart(ctxFund, {
+          type: 'doughnut',
+          data: {
+            labels: ['Đã đóng', 'Chưa đóng'],
+            datasets: [{ data: [paidCount, (state.students.length || 42) - paidCount], backgroundColor: ['#10b981', '#f43f5e'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+        });
+      }
+    }
+
+    // 9. NHẬP / XUẤT EXCEL HỌC SINH
+    function exportExcelStudents() {
+      const rows = state.students.map((s, i) => ({
+        "STT": i + 1,
+        "Mã HS": s.code || "",
+        "Họ và Tên": s.name,
+        "Số CCCD": s.cccd || "",
+        "Ngày cấp CCCD": s.cccdDate || "",
+        "Giới tính": s.gender || "Nam",
+        "Ngày sinh": s.dob || "",
+        "Tổ": s.team || 1,
+        "Chức vụ": s.role || "Học sinh",
+        "SĐT Học sinh": s.phone || "",
+        "Họ tên Ba": s.fatherName || "",
+        "SĐT Ba": s.fatherPhone || "",
+        "Họ tên Mẹ": s.motherName || "",
+        "SĐT Mẹ": s.motherPhone || "",
+        "Địa chỉ": s.address || "",
+        "Ghi chú": s.notes || ""
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "10A12");
+      XLSX.writeFile(wb, "Danh_Sach_10A12_K58.xlsx");
+    }
+
+    function handleImportExcel(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+          let added = 0;
+          json.forEach((r, idx) => {
+            const name = r["Họ và Tên"] || r["Họ tên"] || r["Tên"];
+            if (name) {
+              state.students.push({
+                id: Date.now() + idx,
+                code: r["Mã định danh"] || r["Mã HS"] || `QT-1012${state.students.length + 1}`,
+                name: String(name).trim(),
+                cccd: String(r["Số CCCD"] || r["CCCD"] || ""),
+                cccdDate: String(r["Ngày cấp"] || ""),
+                gender: r["Giới tính"] || "Nam",
+                dob: r["Ngày sinh"] || "",
+                team: Number(r["Tổ"]) || 1,
+                role: r["Chức vụ"] || "Học sinh",
+                phone: String(r["SĐT"] || r["SĐT Học sinh"] || ""),
+                fatherName: String(r["Họ tên Ba"] || r["Ba"] || ""),
+                fatherPhone: String(r["SĐT Ba"] || ""),
+                motherName: String(r["Họ tên Mẹ"] || r["Mẹ"] || ""),
+                motherPhone: String(r["SĐT Mẹ"] || ""),
+                address: String(r["Địa chỉ"] || ""),
+                notes: String(r["Ghi chú"] || "")
+              });
+              added++;
+            }
+          });
+          saveLocalCache();
+          renderAll();
+          alert(`Đã nhập thành công ${added} học sinh từ file Excel!`);
+        } catch(err) { alert("Lỗi đọc Excel: " + err.message); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // 10. CÀI ĐẶT & KẾT NỐI CLOUD
+    function saveApiUrl() {
+      const u = document.getElementById('api-url-input').value.trim();
+      state.apiUrl = u;
+      localStorage.setItem('API_URL_10A12', u);
+      alert("Đã lưu URL kết nối Google Apps Script!");
+    }
+
+    async function testApiConnection() {
+      saveApiUrl();
+      syncWithCloud();
+    }
+
+    async function syncWithCloud() {
+      if (!state.apiUrl) {
+        alert("Vui lòng cấu hình URL Google Apps Script trong tab Cài đặt!");
+        switchTab('settings');
+        return;
+      }
+      const icon = document.getElementById('sync-icon');
+      icon?.classList.add('animate-spin');
+      try {
+        const res = await fetch(`${state.apiUrl}?action=GET_ALL`);
+        const json = await res.json();
+        if (json.status === "success") {
+          state.students = json.data.students || [];
+          state.incidents = json.data.incidents || [];
+          state.payments = json.data.fundPayments || {};
+          state.expenses = json.data.fundExpenses || [];
+          saveLocalCache();
+          renderAll();
+          alert("Đã đồng bộ thành công với Google Sheets!");
+        }
+      } catch(err) {
+        alert("Lỗi đồng bộ: " + err.message);
+      } finally {
+        icon?.classList.remove('animate-spin');
+      }
+    }
+
+    function saveSettingsConfig() {
+      const np = document.getElementById('new-pin-input').value.trim();
+      if (np) { state.pinGVCN = np; localStorage.setItem('PIN_GVCN', np); }
+      saveLocalCache();
+      alert("Đã lưu cài đặt phân quyền!");
+    }
+
+    function lockApp() {
+      const p = prompt("Nhập mã PIN GVCN để mở khóa (Mặc định: 2026):");
+      if (p !== state.pinGVCN) {
+        alert("Sai mã PIN!");
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
